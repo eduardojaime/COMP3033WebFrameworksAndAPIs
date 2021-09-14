@@ -6,6 +6,8 @@ Command | Description
 -|-
 node -v   | prints the currently installed version of node
 npm -v | prints the currently installed version of npm
+node <file> | Runs the specified file
+npm i <package> | Installs the specified NPM package locally
 
 ### Part 1 Installing Node.js and NPM
 
