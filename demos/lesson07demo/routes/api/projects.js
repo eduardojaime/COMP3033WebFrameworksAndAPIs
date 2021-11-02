@@ -4,6 +4,8 @@ const { route } = require('..');
 const router = express.Router();
 // Import the model
 const Project = require('../../models/project');
+// Specify a default page size to use in any request handler in this route
+const pagesize = 10;
 
 // Configure your router by adding handlers
 // GET handler for /api/projects
@@ -13,15 +15,47 @@ router.get('/', (req, res, next) => {
     // web app >> res.render('view', data);
     // web api returns JSOn
     // res.json('success');
-    Project.find((err, projects) => {
-        if (err) {
-            console.log(err);
-            res.status(500).json('Error!');
-        }
-        else {
-            res.status(200).json(projects);
-        }
-    });
+
+    // Pagination needs a page number (how many records to skip)
+    // Mongoose provides limit() and skip() functions
+    // Given a page number (from URL) we'll calculate how many records to skip
+    let page = req.query.page || 1; // if page is null then use 1 as deault value
+    // calculate how many records to skip
+    // page 1 shows 1 to 10 so skip 0
+    // page 2 shows 11 to 20 so skip 10
+    let skipSize = pagesize * (page - 1);
+
+    // Filtering requires a query that we pass to the find function
+    // query in mongoDB is a json object
+    // create an empty object
+    let query = {};
+    // validate whether parameters are included in request and add them to query object
+    if (req.query.course)
+    {
+        query.course = req.query.course;
+    }
+    if (req.query.status)
+    {
+        query.status = req.query.status;
+    }
+
+
+    // extend the find function: use query, and chain limit, filter, sort methods
+    Project.find(
+        query, // filter
+        (err, projects) => { // callback function
+            if (err) {
+                console.log(err);
+                res.status(500).json('Error!');
+            }
+            else {
+                res.status(200).json(projects);
+            }
+        })
+        // implement pagination here by chaining methods
+        .sort({ name: 1 })
+        .skip(skipSize)
+        .limit(pagesize); // sort by name, jump to the nth position, then take x number of records
 });
 
 // POST /api/projects > Input: JSON object containing information about the project
