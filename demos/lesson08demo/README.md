@@ -17,6 +17,7 @@
     - Create a new const called BasicStragety and use the passport-http package to initialize it
         - Use the BasicStrategy attribute
     - Scroll down past the app.use() calls
+    - Initialize passport by calling app.use(passport.initialize());
     - Call passport.use() and define a new BasicStrategy
         - The constructor method accepts a callback function with three parameters
             - username > username provided in the request
