@@ -11,12 +11,21 @@ const config = require('./config/globals');
 const passport = require('passport');
 const BasicStrategy = require('passport-http').BasicStrategy;
 
+// Documenting the API
+const swaggerUI = require('swagger-ui-express');
+const swaggerJSDoc = require('swagger-jsdoc');
+const YAML = require('yamljs');
+
 // Web App Endpoint routers
 var indexRouter = require('./routes/index');
 // API Endpoint routers
 const projectsRouter = require('./routes/api/projects');
 
 var app = express();
+
+// 1) Load from YAML file
+const swaggerDocument = YAML.load('./documentation/api-specification.yaml');
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
