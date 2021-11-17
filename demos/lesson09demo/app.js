@@ -24,8 +24,34 @@ const projectsRouter = require('./routes/api/projects');
 var app = express();
 
 // 1) Load from YAML file
-const swaggerDocument = YAML.load('./documentation/api-specification.yaml');
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// const swaggerDocument = YAML.load('./documentation/api-specification.yaml');
+// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+
+// 2) Load from comments with swagger-jsdoc
+// Create options object
+// const options = {
+//   definition: {
+//     openapi: '3.0.0',
+//     info: {
+//       title: 'Project Manager API',
+//       version: '1.0.0'
+//     }
+//   },
+//   apis: ['./routes/api/*.js'] // list of paths where path information is extracted from
+// };
+// // create a spec object
+// const swaggerSpec = swaggerJSDoc(options);
+// // set it up
+// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+// 3) Loading an OAS document from a link
+const options = {
+  swaggerOptions: {
+    url: 'https://petstore.swagger.io/v2/swagger.json'
+  }
+};
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(null, options));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

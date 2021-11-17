@@ -10,6 +10,15 @@ const pagesize = 10;
 // Configure your router by adding handlers
 // GET handler for /api/projects
 // Goal: View a list of projects
+/**
+ * @openapi
+ * /api/Projects:
+ *  get:
+ *      description: "Lists all projects"
+ *      responses:
+ *          "200":
+ *              description: "Returns an unfiltered list of  projects"
+ */
 router.get('/', (req, res, next) => {
     // the difference between web app and web api is what we return
     // web app >> res.render('view', data);
@@ -90,7 +99,7 @@ router.post('/', (req, res, next) => {
 });
 
 
-// PUT /projects/:_id > Input: JSON object containing information about the project
+// PUT /api/projects/:_id > Input: JSON object containing information about the project
 router.put('/:_id', (req, res, next) => {
     if (!req.body.name) {
         res.status(400).json({ 'ValidationError': 'Name is a required field' });
@@ -120,7 +129,7 @@ router.put('/:_id', (req, res, next) => {
     }
 });
 
-// DELETE /projects/:_id
+// DELETE /api/projects/:_id
 router.delete('/:_id', (req, res, next) => {
     Project.remove(
         { _id: req.params._id }, // filter query with the id 

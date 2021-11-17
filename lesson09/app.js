@@ -38,7 +38,7 @@ const options = {
   },
   apis: ['./routes/api/*.js'], // files containing annotations as above
 };
-// Create an Spec object
+// Create a Spec object
 const swaggerSpec = swaggerJSDoc(options);
 // Use it as the base OAS
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
