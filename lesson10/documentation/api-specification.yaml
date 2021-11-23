@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: "Projects Manager API"
+  version: "1.0.0"
+paths:
+  /projects:
+    get:
+      description: Returns a list of projects
+      responses:
+        '200':
+          description: Unfiltered list of projects
