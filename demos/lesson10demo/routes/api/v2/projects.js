@@ -1,9 +1,8 @@
 // Router that handles requests to /api/projects
 const express = require('express');
-const { route } = require('..');
 const router = express.Router();
 // Import the model
-const Project = require('../../models/project');
+const Project = require('../../../models/project');
 // Specify a default page size to use in any request handler in this route
 const pagesize = 10;
 
@@ -20,6 +19,8 @@ const pagesize = 10;
  *              description: "Returns an unfiltered list of  projects"
  */
 router.get('/', (req, res, next) => {
+    res.setHeader('APIVersion', '2');
+    
     // the difference between web app and web api is what we return
     // web app >> res.render('view', data);
     // web api returns JSOn

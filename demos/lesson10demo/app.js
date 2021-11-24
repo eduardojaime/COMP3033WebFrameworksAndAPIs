@@ -19,7 +19,9 @@ const YAML = require('yamljs');
 // Web App Endpoint routers
 var indexRouter = require('./routes/index');
 // API Endpoint routers
-const projectsRouter = require('./routes/api/projects');
+// const projectsRouter = require('./routes/api/projects'); // original router
+const projectsRouter = require('./routes/api/v1/projects'); // original v1 router
+const projectsRouterV2 = require('./routes/api/v2/projects'); // new version
 
 var app = express();
 
@@ -97,9 +99,18 @@ passport.use(new BasicStrategy((username, password, done) => {
 app.use('/', indexRouter);
 // enable endpoint
 // protect the endpoint by calling passport.authenticate()
+// keep the observable behaviour
 app.use('/api/projects', // Endpoint
         passport.authenticate('basic', { session: false }), // Security middleware
         projectsRouter); // Processing middleware
+// enable new endpoints
+app.use('/api/v1/projects', 
+        passport.authenticate('basic', {session: false}),
+        projectsRouter);
+app.use('/api/v2/projects',
+        passport.authenticate('basic', { session: false }),
+        projectsRouterV2);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
