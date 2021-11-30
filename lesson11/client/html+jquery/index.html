@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <!-- Add jQuery from the official CDN -->
+        <!-- https://code.jquery.com/ -->
+        <script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+
+        <script>
+            var url = 'http://localhost:3000/api/projects?status=DONE' // make these configurable
+            // ways to protect endpoints
+            // - create authentication endpoint that must be called first to get a new token each time
+            // - restrict endpoint to serve only a known range of IP addresses
+            var token = 'YWRtaW46ZGVmYXVsdA=='; // not a good idea to put these in code
+
+            $(document).ready(function (){
+                // Set authentication headers
+                $.ajaxSetup({
+                    headers: { Authorization: 'Basic ' + token },
+                });
+                
+                // Documentation https://www.w3schools.com/jquery/ajax_get.asp
+                // get syntax  $.get(URL,data,function(data,status,xhr),dataType)
+                $.get(
+                    url, 
+                    // in case we send something, send object in JSON
+                    function(data, status) {
+                        // 1) Verify data and status
+                        // console.log(JSON.stringify(data));
+                        // alert(status);
+
+                        // 2) Data comes as an array of object
+                        // let first = data[0];
+                        // alert(JSON.stringify(first));
+
+                        // 3) Iterate through the array to process the data
+                        data.forEach(elem => {
+                            let tableBody = $('#projectListing');
+                            let markup = '<tr><td>' + elem.name + '</td><td>' + elem.status + '</td><td>' + new Date(elem.dueDate).toDateString() + '</td></tr>'
+                            tableBody.append(markup);
+                        });
+                    });
+            });
+        </script>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <th>Project</th>
+                <th>Status</th>
+                <th>Due Date</th>
+            </thead>
+            <tbody id="projectListing"></tbody>
+        </table>
+    </body>
+</html>
