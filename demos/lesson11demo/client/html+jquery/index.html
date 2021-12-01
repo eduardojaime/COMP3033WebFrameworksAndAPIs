@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <!-- add a reference to jQuery CDN -->
+        <!-- https://code.jquery.com/ -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <!-- Write custom JS script to call the API -->
+        <script>
+            // Variables
+            let url = 'http://localhost:3000/api/projects?status=DONE';
+            let token = 'YWRtaW46ZGVmYXVsdA=='; // not the best idea
+            // Call API when page loads
+            $(document).ready(function (){ // anonymous function
+                // add security tokens
+                $.ajaxSetup({ 
+                    headers: { Authorization: 'Basic ' + token }
+                });
+                
+                $.get(
+                    url, //url
+                    function(data, status) { 
+                        //callback
+                        //1) verify data and status
+                        console.log(data); // browser console
+                        alert(status); 
+                    }
+                );
+            });
+        </script>
+    </head>
+    <body>
+        <!-- Render the results of the API call in this table -->
+        <table>
+            <thead>
+                <th>Project</th>
+                <th>Status</th>
+                <th>Due Date</th>
+            </thead>
+            <tbody id="projectListing">
+                <!-- This part will be populated with data from the API -->
+            </tbody>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: "Projects Manager API"
+  version: "1.0.0"
+paths:
+  /projects:
+    get:
+      description: "Returns a list of Projects"
+      parameters:
+        - name: "course"
+          description: "This is the name of the course that the project belongs to"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+        - name: "status"
+          description: "Represents the status of the project: TO DO, IN PROGRESS, DONE"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: Unfiltered list of Projects"
+      
