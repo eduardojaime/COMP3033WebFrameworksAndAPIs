@@ -21,8 +21,22 @@
                     function(data, status) { 
                         //callback
                         //1) verify data and status
-                        console.log(data); // browser console
-                        alert(status); 
+                        // console.log(data); // browser console
+                        // alert(status); 
+
+                        // 2) Data comes as an array of object
+                        // let first = data[0];
+                        // alert(first.name);
+                        // alert(JSON.stringify(first));
+
+                        // 3) Iterate through the array to process/display data
+                        data.forEach(element => {
+                            let tableBody = $('#projectListing'); // obtain the table body element
+                            // let markup = '<tr><td>' + element.name + '</td><td>' + element.status + '</td><td>' + element.dueDate + '</td></tr>'
+                            let markup = `<tr><td>${element.name}</td><td>${element.status}</td><td>${new Date(element.dueDate).toDateString()}</td></tr>`;
+                            tableBody.append(markup);
+                        });
+
                     }
                 );
             });
