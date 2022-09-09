@@ -1,6 +1,6 @@
 # Instructions
 
-### Exploring an API Directory
+### Part 1 Exploring an API Directory
 
 - Navigate to https://www.programmableweb.com
 - Browse around the site
@@ -25,7 +25,7 @@
                 - Supported Response Formats
                 - Is this an unofficial API?
 
-### Consuming an API from the directory
+### Part 2 Consuming an API from the directory
 
 - Search for Weather Unlocked Local Weather in the directory
     - Alternatively, use the direct link https://www.programmableweb.com/api/weather-unlocked-local-weather
