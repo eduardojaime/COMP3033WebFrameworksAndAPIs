@@ -3,12 +3,15 @@ const http = require('http');
 // configure server: createServer().listen() method chain
 // callback function accepts req and res parameters
 http.createServer((req, res) => {
-    // modify res object and call end() when ready to send response back to caller/client
-    // set response headers
-    res.writeHead(200, { 'content-type': 'text-plain'});
-    // set response content
-    res.write('Hello world!');
-    // end response
+    // if you wanted to do routing, then you'd need to write everything from scratch
+    console.log(req.url);
+    res.writeHead(200, { 'content-type': 'text-plain' });
+    if (req.url == '/hello') {
+        res.write('Hello!');
+    }
+    else {
+        res.write('Invalid endpoint!');
+    }
     res.end();
 }).listen(3000);
 
