@@ -21,7 +21,7 @@ router.get('/', (req, res, next) => {
         }
     ];
     // send project list as a JSON response with status code 200 OK
-    res.json(projectList).status(200);
+    res.status(200).json(projectList);
 });
 
 // export the router object
