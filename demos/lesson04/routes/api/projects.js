@@ -12,7 +12,7 @@ router.get('/', (req,res,next) => {
             console.log(err);
         }
         else {
-            res.json(projects);
+            res.status(200).json(projects);
         }
     })
 })
