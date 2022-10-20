@@ -33,7 +33,6 @@ router.get('/', (req, res, next) => {
         query.status = req.query.status;
     }
 
-
     // Modify find() to accept query
     Project.find(
         query, // filter 
@@ -41,7 +40,6 @@ router.get('/', (req, res, next) => {
             if (err) {
                 console.log(err);
                 res.status(500).json({ 'ErrorMessage': 'Server threw an exception' });
-
             }
             else {
                 res.status(200).json(projects);
@@ -50,7 +48,7 @@ router.get('/', (req, res, next) => {
         // implement pagination
         .sort({ name: 1 }) // to achieve a consistent result sort by name A to Z
         .limit(pageSize) // set page size limit
-        .skip(skipSize);
+        .skip(skipSize); // 'jump' to the first element in page x
 });
 
 // POST /projects
