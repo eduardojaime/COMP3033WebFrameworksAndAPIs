@@ -6,12 +6,27 @@ const Project = require("../../models/project");
 
 // GET /api/projects/ > returns a list of projects in DB
 router.get("/", (req, res, next) => {
-  // for now, just enter success
-  // res.json('success');
-  // Show an unfiltered list of Projects
-  Project.find((err, projects) => {
+  // Filter by course or status (or both)
+  // pass parameters as URL query string
+  // Expected query string is ?status=TO DO&course=JS FRAMEWORKS
+
+  // create a query object as a dynamic object
+  let query = {}; // represents my filter in mongodb
+  // retrieve query string
+  // parse the values and filter modify the query object
+  if (req.query.course) { // if course is not null
+    query.course = req.query.course;
+  }
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
+  // find takes two parameters: filter, callback
+  Project.find(
+    query,
+    (err, projects) => {
     if (err) {
       console.log(err);
+      res.status(500).json({ 'ErrorMessage': 'Server threw an exception' });
     } else {
       res.status(200).json(projects);
     }

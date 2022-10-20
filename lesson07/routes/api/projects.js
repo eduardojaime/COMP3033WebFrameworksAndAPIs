@@ -48,7 +48,7 @@ router.get('/', (req, res, next) => {
             }
         })
         // implement pagination
-        .sort({ name: 1 }) // to achieve a consisten result sort by name A to Z
+        .sort({ name: 1 }) // to achieve a consistent result sort by name A to Z
         .limit(pageSize) // set page size limit
         .skip(skipSize);
 });
