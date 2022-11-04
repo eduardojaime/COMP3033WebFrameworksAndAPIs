@@ -84,7 +84,7 @@ passport.use(new BasicStrategy((username, password, done) => {
     User.findOne({ username: userid }, function (err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false); }
-      if (!user.verifyPassword(password)) { return done(null, false); }
+      if (!user.validPassword(password)) { return done(null, false); }
       return done(null, user);
     });
   */
