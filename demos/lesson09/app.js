@@ -32,23 +32,31 @@ app.use(cors());
 // app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // 2) Load from comments using swagger-jsdoc
+// const options = {
+//   definition: {
+//     openapi: "3.0.0",
+//     info: {
+//       title: "Project Tracker Web API",
+//       version: "1.0.0",
+//     },
+//     servers: [
+//       {
+//         url: "https://localhost:3000/api",
+//       },
+//     ],
+//   },
+//   apis: ["./routes/api/*.js"],
+// };
+// const swaggerSpec = swaggerJSDoc(options);
+// app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+// 3) Load specification document from external link
 const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Project Tracker Web API",
-      version: "1.0.0",
-    },
-    servers: [
-      {
-        url: "https://localhost:3000/api",
-      },
-    ],
-  },
-  apis: ["./routes/api/*.js"],
+  swaggerOptions: {
+    url: 'http://petstore.swagger.io/v2/swagger.json'
+  }
 };
-const swaggerSpec = swaggerJSDoc(options);
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(null, options));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
