@@ -6,6 +6,15 @@ const Project = require("../../models/project");
 const pageSize = 10; // it's a good idea to have this as a configurable number
 
 // GET /api/projects/ > returns a list of projects in DB
+/**
+ * @openapi
+ * /projects:
+ *  get:
+ *    description: Lists all projects
+ *    responses:
+ *      '200':
+ *        description: Returns an unfiltered list of projects 
+ */
 router.get("/", (req, res, next) => {
   // Pagination needs pageSize and pageNumber
   let pageNumber = req.query.page || 1;

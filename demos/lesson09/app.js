@@ -13,23 +13,42 @@ const BasicStrategy = require("passport-http").BasicStrategy;
 var indexRouter = require("./routes/index");
 const projectsRouter = require("./routes/api/projects");
 
-// Import packages needed for SwaggerUI/OpenAPI 
+// Import packages needed for SwaggerUI/OpenAPI
 // allows you to render a user-friendly swagger UI documentation page
-const swaggerUI = require('swagger-ui-express'); 
+const swaggerUI = require("swagger-ui-express");
 // allows you to load a yaml file into an object
-const YAML = require('yamljs'); 
+const YAML = require("yamljs");
 // for parsing comments into OpenAPI
-const swaggerJSDoc = require('swagger-jsdoc'); 
+const swaggerJSDoc = require("swagger-jsdoc");
 
 var app = express();
 
 // enable CORS using npm package
-var cors = require('cors');
+var cors = require("cors");
 app.use(cors());
 
 // 1) Load OpenAPI file from local YAML file
-const swaggerDocument = YAML.load('./docs/project-tracker-api.yaml');
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// const swaggerDocument = YAML.load('./docs/project-tracker-api.yaml');
+// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+
+// 2) Load from comments using swagger-jsdoc
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Project Tracker Web API",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        url: "https://localhost:3000/api",
+      },
+    ],
+  },
+  apis: ["./routes/api/*.js"],
+};
+const swaggerSpec = swaggerJSDoc(options);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
