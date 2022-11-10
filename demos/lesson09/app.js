@@ -13,6 +13,14 @@ const BasicStrategy = require("passport-http").BasicStrategy;
 var indexRouter = require("./routes/index");
 const projectsRouter = require("./routes/api/projects");
 
+// Import packages needed for SwaggerUI/OpenAPI 
+// allows you to render a user-friendly swagger UI documentation page
+const swaggerUI = require('swagger-ui-express'); 
+// allows you to load a yaml file into an object
+const YAML = require('yamljs'); 
+// for parsing comments into OpenAPI
+const swaggerJSDoc = require('swagger-jsdoc'); 
+
 var app = express();
 
 // view engine setup
