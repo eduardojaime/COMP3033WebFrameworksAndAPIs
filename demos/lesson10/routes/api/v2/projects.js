@@ -4,7 +4,7 @@ const router = express.Router();
 // Import Project model
 // Fix model reference
 const Project = require("../../../models/project");
-const pageSize = 10; // it's a good idea to have this as a configurable number
+const pageSize = 2; // it's a good idea to have this as a configurable number
 
 /**
  * @openapi
@@ -17,27 +17,9 @@ const pageSize = 10; // it's a good idea to have this as a configurable number
  */
 // GET /api/projects/ > returns a list of projects in DB
 router.get("/", (req, res, next) => {
-  // todo handle version and call a different method
-  // backwards compatible
-  let version = req.query.v || '1'; // default version is 1 if parameter not provided
+  // add version identifier to the response headers so that consumers know what version they used
+  res.setHeader('version', 'APIv2');
 
-  // handle version
-  switch(version) {
-    case '1':
-      GetProjectsV1(req, res, next);
-      break;
-    case '2':
-      GetProjectsV2(req, res, next);
-      break;
-    default:
-       // bad request, server cannot handle v > 2
-      res.status(400).json({'message':'Version not supported!'});
-      break;
-  }
-});
-
-// Create method for version 1
-function GetProjectsV1(req, res, next) {
   // legacy method
   // Pagination needs pageSize and pageNumber
   let pageNumber = req.query.page || 1;
@@ -76,12 +58,7 @@ function GetProjectsV1(req, res, next) {
     .sort({ name: 1 }) // sort from A to Z
     .limit(pageSize) // return only 10 elements
     .skip(skipSize); // 'jump' to the first element in page x
-}
-// Create method for version 2
-function GetProjectsV2(req, res, next) {
-  // you would have your code for v2 here
-  res.status(200).json({ 'message': 'Work in progress! But endpoint works!'});
-}
+});
 
 // POST /api/projects/ > add the provided object in the request body to the DB
 router.post("/", (req, res, next) => {

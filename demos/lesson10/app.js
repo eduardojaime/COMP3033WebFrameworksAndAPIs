@@ -11,7 +11,8 @@ const passport = require("passport");
 const BasicStrategy = require("passport-http").BasicStrategy;
 
 var indexRouter = require("./routes/index");
-const projectsRouter = require("./routes/api/projects");
+const projectsRouter = require("./routes/api/v1/projects"); // legacy router
+const projectsRouterV2 = require("./routes/api/v2/projects");
 
 // Import packages needed for SwaggerUI/OpenAPI
 // allows you to render a user-friendly swagger UI documentation page
@@ -92,11 +93,12 @@ passport.use(
 
 app.use("/", indexRouter);
 // Best practice is to put all API related endpoints in their own section
-app.use(
-  "/api/projects",
-  passport.authenticate("basic", { session: false }),
-  projectsRouter
-);
+// leave legacy endpoint as it is
+app.use("/api/projects", passport.authenticate("basic", { session: false }), projectsRouter);
+// register legacy projectsRouter object to /api/v1 endpoint
+app.use("/api/v1/projects", passport.authenticate("basic", {session: false}), projectsRouter);
+// register new projectsRouter object to /api/v2 endpoint
+app.use("/api/v2/projects", passport.authenticate("basic", {session: false}), projectsRouterV2);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
