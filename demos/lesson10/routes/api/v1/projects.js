@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 // Import Project model
-const Project = require("../../../../models/project");
+const Project = require("../../../models/project");
 const pageSize = 10; // it's a good idea to have this as a configurable number
 
 /**
