@@ -15,6 +15,9 @@ router.get('/', (req,res,next) => {
             res.json(projects);
         }
     })
+    // Mongoose v7 > add async to middleware function
+    // let projects = await Project.find().sort([["DueDate", "dscending"]]);
+    // res.status(200).json(projects);
 })
 
 module.exports = router;
