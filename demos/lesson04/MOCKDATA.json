@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Veribet",
+    "dueDate": "2023-12-05",
+    "course": "JS",
+    "status": "DONE"
+  },
+  {
+    "name": "Redhold",
+    "dueDate": "2023-12-04",
+    "course": "ASP.NET",
+    "status": "DONE"
+  },
+  {
+    "name": "Trippledex",
+    "dueDate": "2023-11-01",
+    "course": "PROGRAMMING",
+    "status": "IN PROGRESS"
+  },
+  {
+    "name": "Wrapsafe",
+    "dueDate": "2023-11-01",
+    "course": "ASP.NET",
+    "status": "TO DO"
+  },
+  {
+    "name": "Ronstring",
+    "dueDate": "2023-09-17",
+    "course": "ASP.NET",
+    "status": "TO DO"
+  },
+  {
+    "name": "Sub-Ex",
+    "dueDate": "2023-11-09",
+    "course": "ASP.NET",
+    "status": "DONE"
+  },
+  {
+    "name": "Viva",
+    "dueDate": "2023-10-10",
+    "course": "PROGRAMMING",
+    "status": "IN PROGRESS"
+  },
+  {
+    "name": "Solarbreeze",
+    "dueDate": "2023-10-02",
+    "course": "PROGRAMMING",
+    "status": "DONE"
+  },
+  {
+    "name": "Kanlam",
+    "dueDate": "2023-11-08",
+    "course": "JS",
+    "status": "IN PROGRESS"
+  },
+  {
+    "name": "Prodder",
+    "dueDate": "2023-10-02",
+    "course": "PROGRAMMING",
+    "status": "TO DO"
+  }
+]
