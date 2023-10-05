@@ -7,7 +7,22 @@ const router = express.Router();
 const Project = require("../../models/project");
 // Configure handlers
 // Add CRUD functionality by adding handlers for these HTTP methods
-// TODO C mapped to POST
+// C mapped to POST
+router.post("/", async (req, res, next) => {
+  if (!req.body.name) {
+    res.status(400).json({ validationError: "Name is a required field." });
+  } else if (!req.body.course) {
+    res.status(400).json({ validationError: "Course is a required field." });
+  } else {
+    let project = new Project({
+      name: req.body.name,
+      dueDate: req.body.dueDate,
+      course: req.body.course,
+    });
+    await project.save();
+    res.status(201).json(project);
+  }
+});
 // R mapped to GET
 router.get("/", async (req, res, next) => {
   // res.status(200).json("success");
