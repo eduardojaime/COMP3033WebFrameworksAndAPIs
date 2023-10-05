@@ -53,6 +53,10 @@ router.put("/:_id", async (req, res, next) => {
     res.status(200).json(project);
   }
 });
-// TODO D mapped to DELETE
+// D mapped to DELETE
+router.delete("/:_id", async (req, res, next) => {
+  await Project.findByIdAndDelete(req.params._id);
+  res.status(200).json({ 'success': 'true' });
+});
 // Export
 module.exports = router;
