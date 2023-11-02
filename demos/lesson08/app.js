@@ -28,26 +28,48 @@ app.use(express.static(path.join(__dirname, "public")));
 // Initialize passport and strategy before routes definition
 app.use(passport.initialize());
 // Basic Strategy uses base64 encoded string with format 'username:password'
-passport.use(new BasicStrategy((username, password, done) => {
-  // Provide code to find user and validate password
-  // hardcode credentials admin:default
-  if (username == "admin" && password == "default") {
-    console.log(`User ${username} authenticated successfully!`);
-    return done(null, username);
-  }
-  else {
-    console.log(`User ${username} authentication failed!`);
-    return done(null, false); // false means no user was accepted
-  }
-  // Example with mongoose model from https://github.com/jaredhanson/passport-http
-}));
+passport.use(
+  new BasicStrategy((username, password, done) => {
+    // Provide code to find user and validate password
+    // hardcode credentials admin:default
+    // Valid login YWRtaW46ZGVmYXVsdA==
+    // Invalid Login YWRtaW46aW5jb3JyZWN0cGFzcw== (admin:incorrectpass)
+    if (username == "admin" && password == "default") {
+      console.log(`User ${username} authenticated successfully!`);
+      return done(null, username);
+    } else {
+      console.log(`User ${username} authentication failed!`);
+      return done(null, false); // false means no user was accepted
+    }
+    // Example with mongoose model from https://github.com/jaredhanson/passport-http
+    // Add a user.js model in /models
+    // Add a signup page and handle adding user to the DB
+    // Replace the hardcoded user with the code below:
+    // User.findOne({ username: username }, function (err, user) {
+    //   if (err) {
+    //     return done(err);
+    //   }
+    //   if (!user) {
+    //     return done(null, false);
+    //   }
+    //   if (!user.verifyPassword(password)) {
+    //     return done(null, false);
+    //   }
+    //   return done(null, user);
+    // });
+  })
+);
 // Routes definition
 app.use("/", indexRouter);
 // app.use('/users', usersRouter);
 // call passport.authenticate() before router object
 // no need to store sessions since we are using RESTful architecture
 // In REST, client must provide ALL information that the server needs to process the request
-app.use("/api/projects", passport.authenticate("basic", { session: false }), projectsRouter);
+app.use(
+  "/api/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
 
 // Connect to DB after router/controller configuration
 mongoose
