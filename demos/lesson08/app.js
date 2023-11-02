@@ -6,6 +6,9 @@ var logger = require("morgan");
 // Configure DB connectivity
 var mongoose = require("mongoose");
 var configs = require("./config/globals");
+// Import Security Packages
+var passport = require("passport");
+var BasicStrategy = require("passport-http").BasicStrategy;
 
 var indexRouter = require("./routes/index");
 // var usersRouter = require('./routes/users');
@@ -22,10 +25,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
+// Initialize passport and strategy before routes definition
+app.use(passport.initialize());
+// Basic Strategy uses base64 encoded string with format 'username:password'
+passport.use(new BasicStrategy((username, password, done) => {
+  // Provide code to find user and validate password
+  // hardcode credentials admin:default
+  if (username == "admin" && password == "default") {
+    console.log(`User ${username} authenticated successfully!`);
+    return done(null, username);
+  }
+  else {
+    console.log(`User ${username} authentication failed!`);
+    return done(null, false); // false means no user was accepted
+  }
+  // Example with mongoose model from https://github.com/jaredhanson/passport-http
+}));
+// Routes definition
 app.use("/", indexRouter);
 // app.use('/users', usersRouter);
-app.use("/api/projects", projectsRouter);
+// call passport.authenticate() before router object
+// no need to store sessions since we are using RESTful architecture
+// In REST, client must provide ALL information that the server needs to process the request
+app.use("/api/projects", passport.authenticate("basic", { session: false }), projectsRouter);
 
 // Connect to DB after router/controller configuration
 mongoose
