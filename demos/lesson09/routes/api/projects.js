@@ -27,6 +27,15 @@ router.post("/", async (req, res, next) => {
   }
 });
 // R mapped to GET
+/** 
+ * @openapi
+ * /projects:
+ *  get:
+ *    description: List all projects
+ *    responses:
+ *      200:
+ *        description: Returns a list of projects
+*/
 router.get("/", async (req, res, next) => {
   // res.status(200).json("success");
   // Pagination

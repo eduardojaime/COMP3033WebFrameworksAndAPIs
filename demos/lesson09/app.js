@@ -16,7 +16,32 @@ var swaggerUI = require("swagger-ui-express");
 // Manual documentation approach, load YAML file into object and to render it
 var YAML = require("yamljs");
 var swaggerDocument = YAML.load("./documentation/api-specification.yaml");
-
+// Comments approach
+var swaggerJSDoc = require("swagger-jsdoc");
+var options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Project Tracker API",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000/api"
+      }
+    ]
+  },
+  apis: ["./routes/api/*.js"], // paths to files containing annotations
+}
+var swaggerSpec = swaggerJSDoc(options);
+// Load file from URL
+var specfileURL = "http://petstore.swagger.io/v2/swagger.json";
+var optionsForURL = {
+  swaggerOptions: {
+    url: specfileURL
+  }
+}
+// Router Objects
 var indexRouter = require("./routes/index");
 // var usersRouter = require('./routes/users');
 var projectsRouter = require("./routes/api/projects");
@@ -33,8 +58,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 // Enable Documentation Section
-// 1) Loading a yaml document
+// 1) Loading a yaml document loaded in swaggerDocument object
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// 2) Alternative approach generating documentation from comments
+app.use("/docs-alt", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+// 3) Loading existing file hosted in the cloud
+app.use("/docs-cloud", swaggerUI.serve, swaggerUI.setup(null, optionsForURL));
 // Initialize passport and strategy before routes definition
 app.use(passport.initialize());
 // Basic Strategy uses base64 encoded string with format 'username:password'
