@@ -9,6 +9,13 @@ var configs = require("./config/globals");
 // Import Security Packages
 var passport = require("passport");
 var BasicStrategy = require("passport-http").BasicStrategy;
+// Import CORS to fix fetch error in SwaggerUI 
+var cors = require("cors");
+// Packages for Documenting the API
+var swaggerUI = require("swagger-ui-express");
+// Manual documentation approach, load YAML file into object and to render it
+var YAML = require("yamljs");
+var swaggerDocument = YAML.load("./documentation/api-specification.yaml");
 
 var indexRouter = require("./routes/index");
 // var usersRouter = require('./routes/users');
@@ -19,12 +26,15 @@ var app = express();
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
-
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+// Enable Documentation Section
+// 1) Loading a yaml document
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 // Initialize passport and strategy before routes definition
 app.use(passport.initialize());
 // Basic Strategy uses base64 encoded string with format 'username:password'
