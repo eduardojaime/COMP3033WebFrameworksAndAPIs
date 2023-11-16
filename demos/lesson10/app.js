@@ -9,7 +9,7 @@ var configs = require("./config/globals");
 // Import Security Packages
 var passport = require("passport");
 var BasicStrategy = require("passport-http").BasicStrategy;
-// Import CORS to fix fetch error in SwaggerUI 
+// Import CORS to fix fetch error in SwaggerUI
 var cors = require("cors");
 // Packages for Documenting the API
 var swaggerUI = require("swagger-ui-express");
@@ -27,24 +27,25 @@ var options = {
     },
     servers: [
       {
-        url: "http://localhost:3000/api"
-      }
-    ]
+        url: "http://localhost:3000/api",
+      },
+    ],
   },
   apis: ["./routes/api/*.js"], // paths to files containing annotations
-}
+};
 var swaggerSpec = swaggerJSDoc(options);
 // Load file from URL
 var specfileURL = "http://petstore.swagger.io/v2/swagger.json";
 var optionsForURL = {
   swaggerOptions: {
-    url: specfileURL
-  }
-}
+    url: specfileURL,
+  },
+};
 // Router Objects
 var indexRouter = require("./routes/index");
 // var usersRouter = require('./routes/users');
 var projectsRouter = require("./routes/api/projects");
+var projectsRouterV2 = require("./routes/api/v2/projects");
 
 var app = express();
 
@@ -104,12 +105,24 @@ app.use("/", indexRouter);
 // call passport.authenticate() before router object
 // no need to store sessions since we are using RESTful architecture
 // In REST, client must provide ALL information that the server needs to process the request
+// Legacy endpoint for consumers already using the API
 app.use(
   "/api/projects",
   passport.authenticate("basic", { session: false }),
   projectsRouter
 );
-
+// versioning, added v1 endpoint
+app.use(
+  "/api/v1/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
+// v2 endpoint
+app.use(
+  "/api/v2/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouterV2
+);
 // Connect to DB after router/controller configuration
 mongoose
   .connect(configs.db, {
