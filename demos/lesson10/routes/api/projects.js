@@ -27,7 +27,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 // R mapped to GET
-/** 
+/**
  * @openapi
  * /projects:
  *  get:
@@ -35,8 +35,25 @@ router.post("/", async (req, res, next) => {
  *    responses:
  *      200:
  *        description: Returns a list of projects
-*/
+ */
 router.get("/", async (req, res, next) => {
+  let version = req.query.v || "1";
+  switch (version) {
+    case "1":
+      // Move all initial code to GetProjectsV1()
+      GetProjectsV1(req, res, next);
+      break;
+    case "2":
+      GetProjectsV2(req, res, next);
+      break;
+    default:
+      res.status(400).json({ Message: "Version not supported!" });
+      break;
+  }
+});
+// Define a function to call for code v1
+// Note, a best approach would be moving these function to their own JS module
+async function GetProjectsV1(req, res, next) {
   // res.status(200).json("success");
   // Pagination
   let page = req.query.page || 1; // if page is null default to 1
@@ -67,9 +84,14 @@ router.get("/", async (req, res, next) => {
   let projects = await Project.find(query)
     .sort([["dueDate", "descending"]])
     .skip(skipSize) // server side skip()
-    .limit(pageSize); 
+    .limit(pageSize);
   res.status(200).json(projects);
-});
+}
+
+async function GetProjectsV2(req, res, next) {
+  res.status(200).json({ Message: "Work in progress!" });
+}
+
 // U mapped to PUT
 router.put("/:_id", async (req, res, next) => {
   if (!req.body.name) {
