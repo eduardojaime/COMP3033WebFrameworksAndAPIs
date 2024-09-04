@@ -13,24 +13,27 @@
     - qa
     - stg
 
-### Part 2 Setting up a CI/CD pipeline in Heroku
+### Part 2 Deploying our Applications using Render
 
-- Sign in to https://dashboard.heroku.com
-- Click on New > Create a New Pipeline named Project-Manager
-- Two environments are enabled by default
-- For both STG and PRD
-    - Click on Add App > Create new App
-    - Name them projectmgr-stg  and projectmgr-prd accordingly
-    - Open projectmgr-stg by clicking on its name
-        - Navigate to the Deploy tab
-        - Select GitHub
-        - Connect to your repository
-        - Enable Automatic deploys from QA branch
-        - In manual deploy, select QA branch and click Deploy
-- Wait for app to deploy then go back to the pipeline
-- Click on Promote to PRD to send your changes from STG to PRD
-- Wait for app to deploy
-- Verify app loads when hitting the STG and PRD URLS
+- Create a new repository for your project (public preferably)
+    - Remember to add a .gitignore file for Node
+    - Upload your code to the repository
+- Check instructions here https://geshan.com.np/blog/2021/01/free-nodejs-hosting/#render
+- Navigate to Render.com
+- Sign up and create a Free Account (using GitHub account to sign up is recommended)
+- For each branch in the new repo:
+    - Add a new Web Service
+    - Select the corresponding branch:
+        - dev
+        - qa
+        - stg
+        - master (for prod)
+    - Connect to GitHub Repo using your credentials
+    - Modify build command to npm install
+    - Modify start command to npm start
+    - Navigate to your app link, e.g.: https://render-app-test-m9ki.onrender.com
+- At the end of this activity you'll have 4 different app links
+
 
 ### Part 3 Demonstrating the Software Development Life Cycle
 
@@ -42,15 +45,14 @@
 - On GitHub.com:
     - Create a new Pull Request from DEV to QA
     - Accept and Merge Pull Request
+    - Verify that deployment was triggered automatically in Render Dashboard
 - When changes are in QA they are usually deployed to a QA environment and functional testing is performed
 - After changes are accepted:
     - Create a new Pull Request from QA to STG
     - Accept and Merge Pull Request
-    - Wait for Automatic Deployment to kick in
+    - Verify that deployment was triggered automatically in Render Dashboard
 - When changes are in STG they are usually tested and verified by the customer
 - After changes are accepted:
-    - Go back to Heroku.com
-    - Open the pipeline
-    - Click on Promote to PRD
-    - Wait for app to deploy
-Verify changes in production URL
+    - Create a new Pull Request from STG to master
+    - Accept and Merge Pull Request
+    - Verify that deployment was triggered automatically in Render Dashboard

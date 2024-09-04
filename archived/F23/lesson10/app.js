@@ -3,117 +3,143 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-// Import the mongoose module and globals file
-const mongoose = require("mongoose");
-const config = require("./config/globals");
-
-const passport = require("passport");
-const BasicStrategy = require("passport-http").BasicStrategy;
-
+// Configure DB connectivity
+var mongoose = require("mongoose");
+var configs = require("./config/globals");
+// Import Security Packages
+var passport = require("passport");
+var BasicStrategy = require("passport-http").BasicStrategy;
+// Import CORS to fix fetch error in SwaggerUI
+var cors = require("cors");
+// Packages for Documenting the API
+var swaggerUI = require("swagger-ui-express");
+// Manual documentation approach, load YAML file into object and to render it
+var YAML = require("yamljs");
+var swaggerDocument = YAML.load("./documentation/api-specification.yaml");
+// Comments approach
+var swaggerJSDoc = require("swagger-jsdoc");
+var options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Project Tracker API",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000/api",
+      },
+    ],
+  },
+  apis: ["./routes/api/*.js"], // paths to files containing annotations
+};
+var swaggerSpec = swaggerJSDoc(options);
+// Load file from URL
+var specfileURL = "http://petstore.swagger.io/v2/swagger.json";
+var optionsForURL = {
+  swaggerOptions: {
+    url: specfileURL,
+  },
+};
+// Router Objects
 var indexRouter = require("./routes/index");
-const projectsRouter = require("./routes/api/v1/projects"); // legacy router
-const projectsRouterV2 = require("./routes/api/v2/projects");
-
-// Import packages needed for SwaggerUI/OpenAPI
-// allows you to render a user-friendly swagger UI documentation page
-const swaggerUI = require("swagger-ui-express");
-// allows you to load a yaml file into an object
-const YAML = require("yamljs");
-// for parsing comments into OpenAPI
-const swaggerJSDoc = require("swagger-jsdoc");
+// var usersRouter = require('./routes/users');
+var projectsRouter = require("./routes/api/projects");
+var projectsRouterV2 = require("./routes/api/v2/projects");
 
 var app = express();
-
-// enable CORS using npm package
-var cors = require("cors");
-app.use(cors());
-
-// 1) Load OpenAPI file from local YAML file
-// const swaggerDocument = YAML.load('./docs/project-tracker-api.yaml');
-// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
-
-// 2) Load from comments using swagger-jsdoc
-// const options = {
-//   definition: {
-//     openapi: "3.0.0",
-//     info: {
-//       title: "Project Tracker Web API",
-//       version: "1.0.0",
-//     },
-//     servers: [
-//       {
-//         url: "https://localhost:3000/api",
-//       },
-//     ],
-//   },
-//   apis: ["./routes/api/*.js"],
-// };
-// const swaggerSpec = swaggerJSDoc(options);
-// app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
-
-// 3) Load specification document from external link
-const options = {
-  swaggerOptions: {
-    url: 'http://petstore.swagger.io/v2/swagger.json'
-  }
-};
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(null, options));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
-
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
-// Initialize passport module
+// Enable Documentation Section
+// 1) Loading a yaml document loaded in swaggerDocument object
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// 2) Alternative approach generating documentation from comments
+app.use("/docs-alt", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+// 3) Loading existing file hosted in the cloud
+app.use("/docs-cloud", swaggerUI.serve, swaggerUI.setup(null, optionsForURL));
+// Initialize passport and strategy before routes definition
 app.use(passport.initialize());
-// Implement Basic Strategy
+// Basic Strategy uses base64 encoded string with format 'username:password'
 passport.use(
   new BasicStrategy((username, password, done) => {
-    // MongoDB
-    // User.findOne({username: username}, function(err, user) {
+    // Provide code to find user and validate password
+    // hardcode credentials admin:default
+    // Valid login YWRtaW46ZGVmYXVsdA==
+    // Invalid Login YWRtaW46aW5jb3JyZWN0cGFzcw== (admin:incorrectpass)
+    if (username == "admin" && password == "default") {
+      console.log(`User ${username} authenticated successfully!`);
+      return done(null, username);
+    } else {
+      console.log(`User ${username} authentication failed!`);
+      return done(null, false); // false means no user was accepted
+    }
+    // Example with mongoose model from https://github.com/jaredhanson/passport-http
+    // Add a user.js model in /models
+    // Add a signup page and handle adding user to the DB
+    // Replace the hardcoded user with the code below:
+    // User.findOne({ username: username }, function (err, user) {
+    //   if (err) {
+    //     return done(err);
+    //   }
+    //   if (!user) {
+    //     return done(null, false);
+    //   }
     //   if (!user.verifyPassword(password)) {
     //     return done(null, false);
     //   }
     //   return done(null, user);
     // });
-    if (username == "admin" && password == "georgian123") {
-      console.log("Admin authenticated successfully!");
-      return done(null, username);
-    } else {
-      console.log(username + " tried to authenticate unsuccessfully!");
-      return done(null, false);
-    }
   })
 );
-
+// Routes definition
 app.use("/", indexRouter);
-// Best practice is to put all API related endpoints in their own section
-// leave legacy endpoint as it is
-app.use("/api/projects", passport.authenticate("basic", { session: false }), projectsRouter);
-// register legacy projectsRouter object to /api/v1 endpoint
-app.use("/api/v1/projects", passport.authenticate("basic", {session: false}), projectsRouter);
-// register new projectsRouter object to /api/v2 endpoint
-app.use("/api/v2/projects", passport.authenticate("basic", {session: false}), projectsRouterV2);
+// app.use('/users', usersRouter);
+// call passport.authenticate() before router object
+// no need to store sessions since we are using RESTful architecture
+// In REST, client must provide ALL information that the server needs to process the request
+// Legacy endpoint for consumers already using the API
+app.use(
+  "/api/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
+// versioning, added v1 endpoint
+app.use(
+  "/api/v1/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
+// v2 endpoint
+app.use(
+  "/api/v2/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouterV2
+);
+// Connect to DB after router/controller configuration
+mongoose
+  .connect(configs.db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((message) => {
+    console.log("App connected successfully!");
+  })
+  .catch((error) => {
+    console.log("Error while connecting: " + error);
+  });
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
-//Connect to Mongo DB after all controller/router configuration
-mongoose
-  .connect(config.db, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then((message) => {
-    console.log("Connected successfully!");
-  })
-  .catch((error) => {
-    console.log(`Error while connecting! ${error}`);
-  });
 
 // error handler
 app.use(function (err, req, res, next) {

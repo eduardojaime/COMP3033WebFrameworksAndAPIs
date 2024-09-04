@@ -1,124 +1,91 @@
+// Router object for /api/projects endpoint
+// Import express
 const express = require("express");
-const { rawListeners } = require("../../app");
+// Create router object
 const router = express.Router();
-// Import Project model
+// Import Model
 const Project = require("../../models/project");
-const pageSize = 10; // it's a good idea to have this as a configurable number
+// Pagination - define page size as global variable or env variable
+const pageSize = 10; // hardcoded number, but better if it's configurable
 
-// GET /api/projects/ > returns a list of projects in DB
-router.get("/", (req, res, next) => {
-  // Pagination needs pageSize and pageNumber
-  let pageNumber = req.query.page || 1;
-  // calculate how many elements to skips
-  // page 1 will show items from 1 to 10
-  // page 2 will show items from 11 to 20 based on pageSize
-  let skipSize = pageSize * (pageNumber-1);
-  // page 1 skips 10 * (1-1) = 0
-  // page 2 skips 10 * (2-1) = 1
+// Configure handlers
+// Add CRUD functionality by adding handlers for these HTTP methods
+// C mapped to POST
+router.post("/", async (req, res, next) => {
+  if (!req.body.name) {
+    res.status(400).json({ validationError: "Name is a required field." });
+  } else if (!req.body.course) {
+    res.status(400).json({ validationError: "Course is a required field." });
+  } else {
+    let project = new Project({
+      name: req.body.name,
+      dueDate: req.body.dueDate,
+      course: req.body.course,
+    });
+    await project.save();
+    res.status(201).json(project);
+  }
+});
+// R mapped to GET
+router.get("/", async (req, res, next) => {
+  // res.status(200).json("success");
+  // Pagination
+  let page = req.query.page || 1; // if page is null default to 1
+  // calculate how many records to skip
+  let skipSize = pageSize * (page - 1);
+  // Page 1 skips 0
+  // Page 2 skips 10
+  // and so on
 
-  // Filter by course or status (or both)
-  // pass parameters as URL query string
-  // Expected query string is ?status=TO DO&course=JS FRAMEWORKS
-
-  // create a query object as a dynamic object
-  let query = {}; // represents my filter in mongodb
-  // retrieve query string
-  // parse the values and filter modify the query object
-  if (req.query.course) { // if course is not null
+  // retrieve query string for filtering
+  // create empty object to represent filter query
+  let query = {};
+  // http://localhost:3000/api/projects?course=JS FRAMEWORKS
+  if (req.query.course) {
     query.course = req.query.course;
   }
+  // http://localhost:3000/api/projects?status=TO DO
   if (req.query.status) {
     query.status = req.query.status;
   }
-  // find takes two parameters: filter, callback
-  Project.find(
-    query,
-    (err, projects) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ 'ErrorMessage': 'Server threw an exception' });
-    } else {
-      res.status(200).json(projects);
-    }
-  })
-  // implement sort(), limit(), skip() with chain methods
-  .sort({ name: 1 }) // sort from A to Z
-  .limit(pageSize) // return only 10 elements
-  .skip(skipSize) // 'jump' to the first element in page x
-  ;
+
+  // mongoose version 7 is async by default
+  // so calls to these methods must be contained inside async functions
+  // find() and sort() are built-in mongoose module methods
+  // find() method takes an optional query parameter that represents fields to filter by
+  // skip() method returns only the records from the given starting point
+  // limit() method returns only the number of records specified in the parameter
+  let projects = await Project.find(query)
+    .sort([["dueDate", "descending"]])
+    .skip(skipSize) // server side skip()
+    .limit(pageSize); 
+  res.status(200).json(projects);
 });
-
-// POST /api/projects/ > add the provided object in the request body to the DB
-router.post("/", (req, res, next) => {
-  // Test
-  // console.log(req.body);
-  // res.status(200).json(req.body);
-
-  // Validate required fields
+// U mapped to PUT
+router.put("/:_id", async (req, res, next) => {
   if (!req.body.name) {
-    res.status(400).json({ ValidationError: "Name is a required field" });
+    res.status(400).json({ validationError: "Name is a required field." });
   } else if (!req.body.course) {
-    res.status(400).json({ ValidationError: "Course is a required field" });
-  }
-  else {
-    // valid project
-    Project.create({
-        name: req.body.name,
-        dueDate: req.body.dueDate,
-        course: req.body.course
-    }, (err, newproject)=>{
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json(newproject);
-        }
-    })
-  }
-});
-
-// PUT /api/projects/:_id
-router.put('/:_id', (req, res, next) => {
-    // Validate required fields
-  if (!req.body.name) {
-    res.status(400).json({ ValidationError: "Name is a required field" });
-  } else if (!req.body.course) {
-    res.status(400).json({ ValidationError: "Course is a required field" });
-  }
-  else {
-    Project.findOneAndUpdate({ // filter to find project to update
-        _id: req.params._id
-    }, { // updated info
+    res.status(400).json({ validationError: "Course is a required field." });
+  } else {
+    // https://mongoosejs.com/docs/tutorials/findoneandupdate.html
+    // https://mongoosejs.com/docs/api/model.html#Model.findByIdAndUpdate()
+    let project = await Project.findByIdAndUpdate(
+      req.params._id,
+      {
         name: req.body.name,
         dueDate: req.body.dueDate,
         course: req.body.course,
-        status: req.body.status
-    }, (err, updatedProject)=>{ // callback function
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json(updatedProject);
-        }
-    });
+      },
+      { new: true } // need this parameter so that mongoose returns the updated version of project
+    );
+    res.status(200).json(project);
   }
 });
-
-// DELETE /api/projects/:_id
-router.delete('/:_id', (req, res, next) => {
-    Project.remove({
-        _id: req.params._id
-    }, (err)=>{
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json({'success': 'true'});
-        }
-    })
+// D mapped to DELETE
+router.delete("/:_id", async (req, res, next) => {
+  await Project.findByIdAndDelete(req.params._id);
+  res.status(200).json({ success: "true" });
 });
-
+// Export
 module.exports = router;

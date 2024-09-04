@@ -1,94 +1,62 @@
+// Router object for /api/projects endpoint
+// Import express
 const express = require("express");
-const { rawListeners } = require("../../app");
+// Create router object
 const router = express.Router();
-// Import Project model
+// Import Model
 const Project = require("../../models/project");
-
-// GET /api/projects/ > returns a list of projects in DB
-router.get("/", (req, res, next) => {
-  // for now, just enter success
-  // res.json('success');
-  // Show an unfiltered list of Projects
-  Project.find((err, projects) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.status(200).json(projects);
-    }
-  });
-});
-
-// POST /api/projects/ > add the provided object in the request body to the DB
-router.post("/", (req, res, next) => {
-  // Test
-  // console.log(req.body);
-  // res.status(200).json(req.body);
-
-  // Validate required fields
+// Configure handlers
+// Add CRUD functionality by adding handlers for these HTTP methods
+// C mapped to POST
+router.post("/", async (req, res, next) => {
   if (!req.body.name) {
-    res.status(400).json({ ValidationError: "Name is a required field" });
+    res.status(400).json({ validationError: "Name is a required field." });
   } else if (!req.body.course) {
-    res.status(400).json({ ValidationError: "Course is a required field" });
-  }
-  else {
-    // valid project
-    Project.create({
-        name: req.body.name,
-        dueDate: req.body.dueDate,
-        course: req.body.course
-    }, (err, newproject)=>{
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json(newproject);
-        }
-    })
+    res.status(400).json({ validationError: "Course is a required field." });
+  } else {
+    let project = new Project({
+      name: req.body.name,
+      dueDate: req.body.dueDate,
+      course: req.body.course,
+    });
+    await project.save();
+    res.status(201).json(project);
   }
 });
-
-// PUT /api/projects/:_id
-router.put('/:_id', (req, res, next) => {
-    // Validate required fields
+// R mapped to GET
+router.get("/", async (req, res, next) => {
+  // res.status(200).json("success");
+  // mongoose version 7 is async by default
+  // so calls to these methods must be contained inside async functions
+  // find() and sort() are built-in mongoose module methods
+  let projects = await Project.find().sort([["dueDate", "descending"]]);
+  res.status(200).json(projects);
+});
+// U mapped to PUT
+router.put("/:_id", async (req, res, next) => {
   if (!req.body.name) {
-    res.status(400).json({ ValidationError: "Name is a required field" });
+    res.status(400).json({ validationError: "Name is a required field." });
   } else if (!req.body.course) {
-    res.status(400).json({ ValidationError: "Course is a required field" });
-  }
-  else {
-    Project.findOneAndUpdate({ // filter to find project to update
-        _id: req.params._id
-    }, { // updated info
+    res.status(400).json({ validationError: "Course is a required field." });
+  } else {
+    // https://mongoosejs.com/docs/tutorials/findoneandupdate.html
+    // https://mongoosejs.com/docs/api/model.html#Model.findByIdAndUpdate()
+    let project = await Project.findByIdAndUpdate(
+      req.params._id,
+      {
         name: req.body.name,
         dueDate: req.body.dueDate,
         course: req.body.course,
-        status: req.body.status
-    }, (err, updatedProject)=>{ // callback function
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json(updatedProject);
-        }
-    });
+      },
+      { new: true } // need this parameter so that mongoose returns the updated version of project
+    );
+    res.status(200).json(project);
   }
 });
-
-// DELETE /api/projects/:_id
-router.delete('/:_id', (req, res, next) => {
-    Project.remove({
-        _id: req.params._id
-    }, (err)=>{
-        if (err) {
-            console.log(err);
-            res.status(500).json({'ErrorMessage': 'Server threw an exception'});
-        }
-        else {
-            res.status(200).json({'success': 'true'});
-        }
-    })
+// D mapped to DELETE
+router.delete("/:_id", async (req, res, next) => {
+  await Project.findByIdAndDelete(req.params._id);
+  res.status(200).json({ 'success': 'true' });
 });
-
+// Export
 module.exports = router;

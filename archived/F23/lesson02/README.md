@@ -9,6 +9,21 @@ npm -v | prints the currently installed version of npm
 node \<file> | Runs the specified file
 npm i \<package> | Installs the specified NPM package locally
 
+### Pre-requirements
+
+- VS Code > https://code.visualstudio.com/
+- Install the following VS Code Extensions
+    - MongoDB for VS Code by MongoDB
+    - Code Spell Checker by Street Side Software
+    - Prettier - Code Formatter by Prettier
+    - HTML CSS Support by ecmel
+    - IntelliCode by Microsoft
+    - OpenAPI (Swagger) Editor BY 42Crunch
+    - openapi-lint by mermade
+    - Swagger Viewer by Arjun G
+    - YAML by Red Hat
+    - Todo Tree by Gruntfuggly
+
 ### Part 1 Installing Node.js and NPM
 
 - Open a browser, and navigate to https://nodejs.org
@@ -117,3 +132,6 @@ npm i \<package> | Installs the specified NPM package locally
         - Hello World message should appear
     - Navigate to http://localhost:3000/goodbye
         - Goodbye World message should appear
+
+
+

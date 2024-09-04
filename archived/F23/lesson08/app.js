@@ -3,15 +3,16 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-// Import the mongoose module and globals file
-const mongoose = require("mongoose");
-const config = require("./config/globals");
-
-const passport = require("passport");
-const BasicStrategy = require("passport-http").BasicStrategy;
+// Configure DB connectivity
+var mongoose = require("mongoose");
+var configs = require("./config/globals");
+// Import Security Packages
+var passport = require("passport");
+var BasicStrategy = require("passport-http").BasicStrategy;
 
 var indexRouter = require("./routes/index");
-const projectsRouter = require("./routes/api/projects");
+// var usersRouter = require('./routes/users');
+var projectsRouter = require("./routes/api/projects");
 
 var app = express();
 
@@ -24,51 +25,69 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
-// Initialize passport module
+// Initialize passport and strategy before routes definition
 app.use(passport.initialize());
-// Implement Basic Strategy
+// Basic Strategy uses base64 encoded string with format 'username:password'
 passport.use(
   new BasicStrategy((username, password, done) => {
-    // MongoDB
-    // User.findOne({username: username}, function(err, user) {
+    // Provide code to find user and validate password
+    // hardcode credentials admin:default
+    // Valid login YWRtaW46ZGVmYXVsdA==
+    // Invalid Login YWRtaW46aW5jb3JyZWN0cGFzcw== (admin:incorrectpass)
+    if (username == "admin" && password == "default") {
+      console.log(`User ${username} authenticated successfully!`);
+      return done(null, username);
+    } else {
+      console.log(`User ${username} authentication failed!`);
+      return done(null, false); // false means no user was accepted
+    }
+    // Example with mongoose model from https://github.com/jaredhanson/passport-http
+    // Add a user.js model in /models
+    // Add a signup page and handle adding user to the DB
+    // Replace the hardcoded user with the code below:
+    // User.findOne({ username: username }, function (err, user) {
+    //   if (err) {
+    //     return done(err);
+    //   }
+    //   if (!user) {
+    //     return done(null, false);
+    //   }
     //   if (!user.verifyPassword(password)) {
     //     return done(null, false);
     //   }
     //   return done(null, user);
     // });
-    if (username == "admin" && password == "georgian123") {
-      console.log("Admin authenticated successfully!");
-      return done(null, username);
-    } else {
-      console.log(username + " tried to authenticate unsuccessfully!");
-      return done(null, false);
-    }
   })
 );
-
+// Routes definition
 app.use("/", indexRouter);
-// Best practice is to put all API related endpoints in their own section
+// app.use('/users', usersRouter);
+// call passport.authenticate() before router object
+// no need to store sessions since we are using RESTful architecture
+// In REST, client must provide ALL information that the server needs to process the request
 app.use(
   "/api/projects",
   passport.authenticate("basic", { session: false }),
   projectsRouter
 );
 
+// Connect to DB after router/controller configuration
+mongoose
+  .connect(configs.db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((message) => {
+    console.log("App connected successfully!");
+  })
+  .catch((error) => {
+    console.log("Error while connecting: " + error);
+  });
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
-//Connect to Mongo DB after all controller/router configuration
-mongoose
-  .connect(config.db, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then((message) => {
-    console.log("Connected successfully!");
-  })
-  .catch((error) => {
-    console.log(`Error while connecting! ${error}`);
-  });
 
 // error handler
 app.use(function (err, req, res, next) {

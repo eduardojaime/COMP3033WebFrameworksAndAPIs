@@ -1,28 +1,18 @@
-// naming represents /api/projects
-// all API related controllers/routers will be inside the /routes/api folder
-// import express module
-const express = require('express');
-// create a router object to configure request handlers
+// API Router/Controller object
+// import express
+const express = require("express");
+// create router object
 const router = express.Router();
-// add request handlers: POST (C) GET (R) PUT (U) DELETE (D)
-// request handler = http verb + path (relative) + middleware function
-// remember here we are in /api/projects so paths will be relative to this
-// GET handler for /api/projects/
-router.get('/', (req, res, next) => {
-    // simulate getting data from MongoDB in JSON format
+// configure handlers
+// GET /api/projects/
+router.get("/", function(req, res, next) {
+    // simulate going to the DB and retrieving a list of projects
     let projects = [
-        {
-            name: "API Documentation",
-            due: "NOV 02, 2022"
-        },
-        {
-            name: "API Specs",
-            due: "NOV 16, 2022"
-        }
+        { name: "LAB01", dueDate: "2023-09-28" },
+        { name: "LAB02", dueDate: "2023-09-30" },
     ];
-    // send list of projects back to client
+    // HTTP REST responses include status code and content
     res.status(200).json(projects);
-});
-
-// export router object and register it in app.js
+})
+// export object
 module.exports = router;

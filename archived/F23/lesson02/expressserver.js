@@ -1,22 +1,21 @@
-// import module
+// import express module
 const express = require("express");
 // create app object
 const app = express();
-// configure routes with middleware functions (or router objects)
-app.use((req, res, next) => {
-  // for all endpoints
-  console.log(req.url);
-  next();
+// configure routes with middleware functions
+// GET /hello
+app.get("/hello", (req, res, next) => {
+    res.status(200).send("Hello World!"); // plain text
 });
-app.use("/hello", (req, res, next) => {
-  res.status(200).send("Hello world!");
+// /goodbye
+app.get("/goodbye", (req, res, next) => {
+    res.status(200).json({ "Message" : "Good bye!" });
 });
-app.use("/goodnight", (req, res, next) => {
-  res.status(200).json("I'm a JSON file!");
+// everything else (instead of cannot GET)
+app.use((req, res) => {
+    res.status(404).send("Not Found!");
 });
-app.use((req, res)=> {
-    res.status(400).send("Not found!");
-})
-// listen to a port and show message in terminal
+// tell the app to listen to a specific port number
 app.listen(3000);
-console.log("Server running at http://localhost:3000");
+// print console message
+console.log("App is running on http://localhost:3000")

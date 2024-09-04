@@ -1,5 +1,5 @@
-const configurations = {
-    'db': 'mongodb+srv://admin:lD1tWJd230ochjyQ@cluster0.ndlnbb0.mongodb.net/ProjectTrackerAPI'
+// configuration object > JSON format
+const configuration = {
+    "db": "mongodb+srv://webappdbuser:nkYWAR2AUgfWyH08@cluster0.ho53tdt.mongodb.net/ProjectTrackerAPI"
 }
-
-module.exports = configurations;
+module.exports = configuration;
