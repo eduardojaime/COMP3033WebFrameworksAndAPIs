@@ -2,20 +2,19 @@
 
 ### Part 1 Exploring an API Directory
 
-- Navigate to https://www.programmableweb.com
+- Navigate to https://www.apislist.com
 - Browse around the site
-    - Click on Learn About APIs to access tutorials and guides
-    - Hover on API News at the top to access News and How-to videos
-    - Hover over API Directory
-        - Explore some of the Featured APIs
+    - Click on About at the top to learn more about the library
+    - Click on APIs > All APIs at the top to access the library
+        - Explore some of the Most Popular APIs
             - Facebook
             - Google Maps
             - Weather Channel
         - Click on each of the above to navigate to the main API page
-            - Scroll down to find the Versions tab
-            - Click on the version with status Recommended
+            - Read the description
             - Examine the Summary tab
-            - Identify the following
+                - Understand each feature and pricing tier
+            - Click on Visit API Docs and identify the following:
                 - API Endpoint
                 - API Portal Home Page
                 - SSL Support
@@ -28,19 +27,8 @@
 ### Part 2 Consuming an API from the directory
 
 - Search for Weather Unlocked Local Weather in the directory
-    - Alternatively, use the direct link https://www.programmableweb.com/api/weather-unlocked-local-weather
-- Scroll down to the Versions section
-    - Click on the version with status Recommended
-    - Scroll down to Summary - Specs
-    - Identify the following
-        - API Endpoint
-        - API Portal Home Page
-        - SSL Support
-        - Authentication Model
-        - Architectural Style
-        - Supported Request Formats
-        - Supported Response Formats
-        - Is this an unofficial API?
+    - Alternatively, use the direct link https://www.weatherunlocked.com/products/weather-api/overview
+    - Read the description and pricing tabs
     - Click on the API Portal Home Page link
         - Alternatively, use the direct link https://developer.weatherunlocked.com/localweather
         - Click on the Documentation tab
