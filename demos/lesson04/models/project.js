@@ -1,7 +1,7 @@
 // Model file names are in singular form
 // This file represents a project in my database
 // Import mongoose
-const mongoose = require(mongoose);
+const mongoose = require("mongoose");
 // Create a schema definition object
 const schemaDefObj = {
     name: {
