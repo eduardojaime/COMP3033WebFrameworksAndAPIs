@@ -33,10 +33,10 @@
         - In Routes:
             - Create a new folder called api
             - Inside of this folder create a file called projects.js
-                ® Import express
-                ® Create router object
-                ® Add a GET handler that returns a hardcoded JSON response
-                ® Export router module
+                - Import express
+                - Create router object
+                - Add a GET handler that returns a hardcoded JSON response
+                - Export router module
         - In app.js:
             - Create router object
             - Use router object on '/projects' endpoint
@@ -50,7 +50,7 @@
     - Create globals.js
     - Create a JSON object called configuration than will contain key value pairs
         - Go back to mongodb.com
-        - Navigate to Clusters > Connect > Connect from your App to view the connetion string
+        - Navigate to Clusters > Connect > Connect from your App to view the connection string
         - Add new key called db with value set as your Mongo DB connection string
         - Remember to replace <password> with your real password
     - Export this object
