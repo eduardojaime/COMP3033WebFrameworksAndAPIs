@@ -9,6 +9,16 @@ const pageSize = 10; // 10 items per page, this must be fine tuned
 // This endpoint returns a list so it's candidate for filtering and pagination
 // GET /projects?course=ASP.NET&status=IN PROGRESS&page=2
 // We'll get the course from the query string
+// Comments for API Specification
+/**
+ * @openapi
+ * /:
+ *  get:
+ *    description: Use to request all projects
+ *    responses:
+ *    '200':
+ *      description: Returns a list of projects
+ */
 router.get("/", async (req, res, next) => {
   // for now, just enter success
   // res.json('success');

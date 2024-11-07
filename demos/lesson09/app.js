@@ -11,8 +11,34 @@ var passport = require("passport");
 var BasicStrategy = require("passport-http").BasicStrategy;
 // Import OpenAPI packages
 var swaggerUI = require("swagger-ui-express");
+// 1) Loading API documentation from a YAML file
 var YAML = require("yamljs");
 var swaggerDocument = YAML.load("./documentation/api-specs.yaml");
+// 2) Generating API documentation from comments in code
+var swaggerJsdoc = require("swagger-jsdoc");
+var options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Project Tracker API",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ]
+  },
+  apis: ["./routes/api/*.js"], // any file under /routes/api that's a js file
+}
+var swaggerSpec = swaggerJsdoc(options);
+// 3) Loading API documentation from cloud location
+var specFileUrl = "https://petstore.swagger.io/v2/swagger.json"
+var optionsForUrl = {
+  swaggerOptions: {
+    url: specFileUrl
+  }
+};
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -31,7 +57,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 // Swagger UI setup
 // 1) This will serve the Swagger UI on /docs endpoint and load the specified documentation file
+// http://localhost:3000/docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// 2) Load the generated documentation from code
+// http://localhost:3000/docs-code
+app.use("/docs-code", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+// 3) Load the documentation from a cloud location
+// http://localhost:3000/docs-cloud
+app.use("/docs-cloud", swaggerUI.serve, swaggerUI.setup(null, optionsForUrl));
 // Initialize and Configure Passport
 app.use(passport.initialize());
 passport.use(new BasicStrategy((username, password, done)=>{
