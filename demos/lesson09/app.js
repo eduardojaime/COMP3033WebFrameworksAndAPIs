@@ -9,6 +9,10 @@ var mongoose = require("mongoose");
 // Import passport packages
 var passport = require("passport");
 var BasicStrategy = require("passport-http").BasicStrategy;
+// Import OpenAPI packages
+var swaggerUI = require("swagger-ui-express");
+var YAML = require("yamljs");
+var swaggerDocument = YAML.load("./documentation/api-specs.yaml");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -25,6 +29,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+// Swagger UI setup
+// 1) This will serve the Swagger UI on /docs endpoint and load the specified documentation file
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 // Initialize and Configure Passport
 app.use(passport.initialize());
 passport.use(new BasicStrategy((username, password, done)=>{
