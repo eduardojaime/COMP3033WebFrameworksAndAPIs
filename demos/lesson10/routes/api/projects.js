@@ -20,6 +20,31 @@ const pageSize = 10; // 10 items per page, this must be fine tuned
  *      description: Returns a list of projects
  */
 router.get("/", async (req, res, next) => {
+  // Move original functionality to a new function
+  // Implement versioning via query string
+  // expecting ?version=1""
+  // if version is not provided, default to v1
+  let version = req.query.version || "1";
+  switch (version) {
+    case "1":
+      await getProjectsV1(req, res, next);
+      break;
+    // I can offer multiple versions of the same endpoint by calling different functions
+    case "2":
+      await getProjectsV2(req, res, next);
+      break;
+    default:
+      res.status(400).json({ error: "Version not supported" });
+  }
+});
+
+// Function for v2 of this endpoint
+async function getProjectsV2(req, res, next) {
+  res.status(200).json({ message: "Work in progress! v2 coming soon." });
+}
+
+// Function for v1 of this endpoint
+async function getProjectsV1(req, res, next) {
   // for now, just enter success
   // res.json('success');
   // Show an unfiltered list of Projects
@@ -49,7 +74,7 @@ router.get("/", async (req, res, next) => {
     .limit(pageSize) // only take 10 records
     .skip(skipSize); // 'jump' to the skipSize record number, e.g 11th record or 21st record
   res.status(200).json(projects);
-});
+}
 
 // POST /projects
 router.post("/", async (req, res, next) => {

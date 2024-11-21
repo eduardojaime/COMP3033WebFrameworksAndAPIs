@@ -27,23 +27,23 @@ var options = {
       {
         url: "http://localhost:3000",
       },
-    ]
+    ],
   },
   apis: ["./routes/api/*.js"], // any file under /routes/api that's a js file
-}
+};
 var swaggerSpec = swaggerJsdoc(options);
 // 3) Loading API documentation from cloud location
-var specFileUrl = "https://petstore.swagger.io/v2/swagger.json"
+var specFileUrl = "https://petstore.swagger.io/v2/swagger.json";
 var optionsForUrl = {
   swaggerOptions: {
-    url: specFileUrl
-  }
+    url: specFileUrl,
+  },
 };
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var projectsRouter = require("./routes/api/projects");
-
+var projectsRouterV2 = require("./routes/apiv2/projects");
 var app = express();
 
 // view engine setup
@@ -67,18 +67,21 @@ app.use("/docs-code", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use("/docs-cloud", swaggerUI.serve, swaggerUI.setup(null, optionsForUrl));
 // Initialize and Configure Passport
 app.use(passport.initialize());
-passport.use(new BasicStrategy((username, password, done)=>{
-  // Here you would typically compare the username and password against a database
-  // For simplicity, we'll just hardcode the values but store them in .env file and configs
-  if(username === configs.Credentials.Username && password === configs.Credentials.Password){
-    console.log("Authentication successful");
-    return done(null, true);
-  }
-  else {
-    console.log("Authentication failed");
-    return done(null, false);
-  }
-  /*
+passport.use(
+  new BasicStrategy((username, password, done) => {
+    // Here you would typically compare the username and password against a database
+    // For simplicity, we'll just hardcode the values but store them in .env file and configs
+    if (
+      username === configs.Credentials.Username &&
+      password === configs.Credentials.Password
+    ) {
+      console.log("Authentication successful");
+      return done(null, true);
+    } else {
+      console.log("Authentication failed");
+      return done(null, false);
+    }
+    /*
     // With a MongoDB database, you would do something like this:
     // you need to define a User model, have a registration page for users to sign up, and use this code
     User.findOne({username: username}, (err, user)=>{
@@ -88,14 +91,34 @@ passport.use(new BasicStrategy((username, password, done)=>{
       return done(null, user); // auth successful
     });
    */
-}));
+  })
+);
 // Endpoints or Routes
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 // Inject authentication middleware to protect this endpoint
 // Session is set to false because we're using Basic Auth in an API call
 // This forces user to provide credentials with every requests
-app.use("/api/projects", passport.authenticate("basic", { session: false }),  projectsRouter);
+// Path-based Versioning
+// Default path is v1
+app.use(
+  "/api/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
+// Define path for v1 following the naming convention for versioning
+// /api/version_number/resource
+app.use(
+  "/api/v1/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouter
+);
+// Define path for v2
+app.use(
+  "/api/v2/projects",
+  passport.authenticate("basic", { session: false }),
+  projectsRouterV2
+);
 
 // MongoDB connection
 mongoose
