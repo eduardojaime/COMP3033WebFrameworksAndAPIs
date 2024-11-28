@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HTML Client</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // Code to retrieve data from API
+      var url =
+        "http://localhost:3000/api/projects?course=ASP.NET&status=IN%20PROGRESS";
+      var token = "YWRtaW46TXlTZWNyZXRQYXNzd29yZDEyMw==";
+      $(document).ready(function () {
+        // When document is ready, make a GET request to the API
+        // Set authentication headers
+        $.ajaxSetup({ headers: { Authorization: "Basic " + token } });
+        // Documentation https://www.w3schools.com/jquery/ajax_get.asp
+        // Make GET request here and use a callback function to handle the response and render data
+        $.get(url, function (data, status) {
+          console.log("Status code: " + status);
+          // use for loop to append html table rows to tbody with id projectList
+          data.forEach((element) => {
+            let tableBody = $("#projectList");
+            let tableRow =
+              "<tr><td>" +
+              element.name +
+              "</td><td>" +
+              element.course +
+              "</td><td>" +
+              element.dueDate +
+              "</td></tr>";
+            tableBody.append(tableRow);
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>Course</th>
+        <th>Due Date</th>
+      </thead>
+      <tbody id="projectList">
+        <!-- INSERT DATA VIA JAVASCRIPT -->
+      </tbody>
+    </table>
+  </body>
+</html>
