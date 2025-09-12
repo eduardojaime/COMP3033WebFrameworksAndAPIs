@@ -1,0 +1,16 @@
+{
+  "name": "server-examples",
+  "version": "1.0.0",
+  "description": "This is a collection of code snippets that showcase how to create web servers in node.js",
+  "license": "ISC",
+  "author": "Eduardo Jaime",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "connect": "^3.7.0",
+    "express": "^5.1.0"
+  }
+}
