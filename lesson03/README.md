@@ -10,7 +10,7 @@
 - Use Express Generator to create a new app using scaffolding
     - Create a new folder and open it with your preferred IDE
     - Open a terminal and run command:
-        - express --view=hbs
+        - npx express-generator --view=hbs
             - --view=hbs specifies the view engine which is Handlebars in this case
             - since this is an API project you may use any view engine of your preference 
     - Install packages via 
