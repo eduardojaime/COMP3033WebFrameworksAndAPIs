@@ -6,6 +6,7 @@ var logger = require('morgan');
 // Router Objects
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var projectsApiRouter = require('./routes/api/projects');
 // App object > represents the Express application
 var app = express();
 
@@ -21,7 +22,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routing Configuration > route + handler
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
+// API Routing Configuration
+// Include 'api' in the path: /api/RESOURCE
+app.use('/api/projects', projectsApiRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
