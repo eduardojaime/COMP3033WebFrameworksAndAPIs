@@ -3,11 +3,40 @@
 const express = require("express");
 const router = express.Router();
 const Project = require("../../models/project");
+// Define page size for pagination
+const PAGE_SIZE = 10;
 // Define routes
 // GET /api/projects/ - Retrieve all projects
 // Mongoose 8.x is now fully async/await based
 router.get("/", async (req, res, next) => {
-  let projects = await Project.find();
+  // Optimize by adding pagination
+  // Retrieve page number from query params, default to page 1 if not present
+  // https://localhost:3000/api/projects?page=2
+  let page = req.query.page || 1;
+  // Calculate number of documents to skip based on page number and page size
+  // page 1 = skip 0, show records 1 to 10
+  // page 2 = skip 10, show records 11 to 20
+  // page 3 = skip 20, show records 21 to 30
+  let skip = PAGE_SIZE * (page - 1);
+  // Use skip() and limit() methods to implement pagination in Mongoose
+
+  // Optimize by adding filtering by course and/or status
+  // https://localhost:3000/api/projects?course=JS Frameworks&status=TODO
+  // Create empty filter object
+  let filter = {};
+  // Add properties to filter object if query params are present
+  if (req.query.course) {
+    filter.course = req.query.course;
+  }
+
+  if (req.query.status) {
+    filter.status = req.query.status;
+  }
+  // Use filter object in find() method
+  let projects = await Project.find(filter)
+    .sort({ dueDate: 1 }) // sort by due date ascending
+    .limit(PAGE_SIZE) // limit result set to page size
+    .skip(skip); // skip number of documents based on page number and page size
   res.status(200).json(projects);
 });
 
