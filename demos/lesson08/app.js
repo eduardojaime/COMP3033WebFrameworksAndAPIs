@@ -32,18 +32,36 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(passport.initialize());
 passport.use(
   // username and password are provided in the Authorization header as a base64 encoded string
-  new BasicStrategy((username, password, done) => {
+  new BasicStrategy(async (username, password, done) => {
     // Implement your user authentication logic here
-    // Hardcoded for now to test base64 strings > admin:password123 = YWRtaW46cGFzc3dvcmQxMjM=
-    // Invalid user example > admin:wrongpassword123 = YWRtaW46d3JvbmdwYXNzd29yZDEyMw==
-    if (username === "admin" && password === "password123") {
-      console.log("Authentication successful for user:", username);
-      // Call done(null, user) if authentication is successful
-      return done(null, { username: "admin" });
-    } else {
-      console.log("Authentication failed for user:", username);
-      // Call done(null, false) if authentication fails
-      return done(null, false);
+    // // Hardcoded for now to test base64 strings > admin:password123 = YWRtaW46cGFzc3dvcmQxMjM=
+    // // Invalid user example > admin:wrongpassword123 = YWRtaW46d3JvbmdwYXNzd29yZDEyMw==
+    // if (username === "admin" && password === "password123") {
+    //   console.log("Authentication successful for user:", username);
+    //   // Call done(null, user) if authentication is successful
+    //   return done(null, { username: "admin" });
+    // } else {
+    //   console.log("Authentication failed for user:", username);
+    //   // Call done(null, false) if authentication fails
+    //   return done(null, false);
+    // }
+    // admin@gc.ca:Password123 > YWRtaW5AZ2MuY2E6UGFzc3dvcmQxMjM=
+    // admin@gc.ca:Password123! (wrong) > YWRtaW5AZ2MuY2E6UGFzc3dvcmQxMjMh=
+    const User = require("./models/user");
+    let existingUser = await User.find({ username: username });
+    if (existingUser && existingUser.length > 0) {
+      let authenticatedUser = await existingUser[0].authenticate(password);
+      // user found verify password
+      let isPasswordValid = authenticatedUser.user.username === username;
+      if (isPasswordValid) {
+        console.log("Authentication successful for user:", existingUser[0].username);
+        return done(null, existingUser[0]); // authentication successful
+      } else {
+        return done(null, false); // invalid password
+      }
+    }
+    else {
+      return done(null, false); // user not found
     }
   })
 );
@@ -52,9 +70,11 @@ passport.use(
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 // Handlers can have more than one middleware function
-app.use("/api/projects", 
-  passport.authenticate("basic", { session: false}), // always check authentication first
-  projectsAPIRouter); // if authenticated, proceed to the route handler
+app.use(
+  "/api/projects",
+  passport.authenticate("basic", { session: false }), // always check authentication first
+  projectsAPIRouter
+); // if authenticated, proceed to the route handler
 // Connect to MongoDB
 mongoose
   .connect(configs.ConnectionStrings.MongoDB)
