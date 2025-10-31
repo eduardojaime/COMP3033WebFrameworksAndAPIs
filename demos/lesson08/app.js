@@ -12,6 +12,10 @@ var projectsAPIRouter = require("./routes/api/projects");
 var configs = require("./config/globals");
 var mongoose = require("mongoose");
 
+// Import passport modules
+var passport = require("passport");
+var BasicStrategy = require("passport-http").BasicStrategy;
+
 var app = express();
 
 // view engine setup
@@ -24,9 +28,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Configure passport and the strategy
+app.use(passport.initialize());
+passport.use(
+  // username and password are provided in the Authorization header as a base64 encoded string
+  new BasicStrategy((username, password, done) => {
+    // Implement your user authentication logic here
+    // Hardcoded for now to test base64 strings > admin:password123 = YWRtaW46cGFzc3dvcmQxMjM=
+    // Invalid user example > admin:wrongpassword123 = YWRtaW46d3JvbmdwYXNzd29yZDEyMw==
+    if (username === "admin" && password === "password123") {
+      console.log("Authentication successful for user:", username);
+      // Call done(null, user) if authentication is successful
+      return done(null, { username: "admin" });
+    } else {
+      console.log("Authentication failed for user:", username);
+      // Call done(null, false) if authentication fails
+      return done(null, false);
+    }
+  })
+);
+
+// Routing Table
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/api/projects", projectsAPIRouter);
+// Handlers can have more than one middleware function
+app.use("/api/projects", 
+  passport.authenticate("basic", { session: false}), // always check authentication first
+  projectsAPIRouter); // if authenticated, proceed to the route handler
 // Connect to MongoDB
 mongoose
   .connect(configs.ConnectionStrings.MongoDB)
