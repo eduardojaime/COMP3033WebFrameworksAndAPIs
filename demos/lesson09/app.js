@@ -16,12 +16,20 @@ var mongoose = require("mongoose");
 var passport = require("passport");
 var BasicStrategy = require("passport-http").BasicStrategy;
 
+// Import Swagger/YAML modules
+const swaggerUI = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerJSDoc = require("swagger-jsdoc");
+// Import CORS to allow cross-origin requests and be able to use the Try It Out feature in Swagger UI
+var cors = require("cors");
+
 var app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
-
+// Enable CORS for all routes
+app.use(cors()); 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -66,13 +74,53 @@ passport.use(
   })
 );
 
+// API documentation routes
+// 1) Load the YAML file from the ./docs folder
+const swaggerDoc = YAML.load("./docs/api-specification.yaml");
+app.use("/docs/local", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+
+// 2) Generate the Swagger doc dynamically using JSDoc comments
+const swaggerJSDocOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Project Tracker API",
+      version: "1.0.0",
+      description: "This API contains endpoints for managing projects for Georgian College students.",
+      contact: {
+        name: "Eduardo Jaime",
+        email: "eduardo.jaime@georgiancollege.ca",
+        url: "https://www.georgiancollege.ca/eduardo-jaime"
+      }
+    },
+    servers: [
+      { url: "http://localhost:3000/api" },
+      { url: "https://dev-projecttracker-ej.onrender.com/api"}
+    ]
+  },
+  apis: [
+    "./routes/api/*.js" // files containing annotations as above
+  ]
+};
+const swaggerJSDocSpec = swaggerJSDoc(swaggerJSDocOptions);
+app.use("/docs/dynamic", swaggerUI.serve, swaggerUI.setup(swaggerJSDocSpec));
+
+// 3) Serve an externally hosted spec file
+const swaggerDocumentUrl = "http://petstore.swagger.io/v2/swagger.json";
+const swaggerDocumentURLOptions = {
+  swaggerOptions: {
+    url: swaggerDocumentUrl
+  }
+}
+app.use("/docs/cloud", swaggerUI.serve, swaggerUI.setup(null, swaggerDocumentURLOptions));
+
 // Routing Table
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 // Handlers can have more than one middleware function
 app.use(
   "/api/projects",
-  passport.authenticate("basic", { session: false }), // always check authentication first
+  // passport.authenticate("basic", { session: false }), // always check authentication first
   projectsAPIRouter
 ); // if authenticated, proceed to the route handler
 // Connect to MongoDB

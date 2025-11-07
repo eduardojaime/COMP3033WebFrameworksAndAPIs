@@ -8,6 +8,15 @@ const PAGE_SIZE = 10;
 // Define routes
 // GET /api/projects/ - Retrieve all projects
 // Mongoose 8.x is now fully async/await based
+/**
+ * @openapi
+ * /projects:
+ *   get:
+ *     description: Lists all projects
+ *     responses:
+ *       200:
+ *         description: Returns an unfiltered list of projects
+ */
 router.get("/", async (req, res, next) => {
   // Optimize by adding pagination
   // Retrieve page number from query params, default to page 1 if not present

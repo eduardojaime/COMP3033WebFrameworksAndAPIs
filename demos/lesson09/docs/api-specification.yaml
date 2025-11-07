@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Project Tracker API
+  description: This API contains endpoints for managing projects for Georgian College students.
+  contact:
+    name: Eduardo Jaime
+    email: eduardo.jaime@georgiancollege.ca
+    url: https://www.georgiancollege.ca/eduardo-jaime
+servers:
+  - url: http://localhost:3000/api
+  - url: https://dev-projecttracker-ej.onrender.com/api
+  - url: https://qa-projecttracker-ej.onrender.com/api
+  - url: https://projecttracker-ej.onrender.com/api
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+paths:
+  /projects:
+    get:
+      summary: Returns list of all projects
+      security:
+        - basicAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [TO DO, DONE, STARTED]
+          required: false
+        - in: query
+          name: course
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+          required: false
+      responses:
+        '200':
+          description: A list of projects.
+          
