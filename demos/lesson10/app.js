@@ -7,6 +7,7 @@ var logger = require("morgan");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var projectsAPIRouter = require("./routes/api/projects");
+var projectsAPIRouterV2 = require("./routes/api/v2/projects");
 
 // Import global configurations and mongoose
 var configs = require("./config/globals");
@@ -22,6 +23,7 @@ const YAML = require("yamljs");
 const swaggerJSDoc = require("swagger-jsdoc");
 // Import CORS to allow cross-origin requests and be able to use the Try It Out feature in Swagger UI
 var cors = require("cors");
+const project = require("./models/project");
 
 var app = express();
 
@@ -117,12 +119,17 @@ app.use("/docs/cloud", swaggerUI.serve, swaggerUI.setup(null, swaggerDocumentURL
 // Routing Table
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+// Leave legacy routes in place for backward compatibility (existing users may still be using them)
 // Handlers can have more than one middleware function
 app.use(
   "/api/projects",
   // passport.authenticate("basic", { session: false }), // always check authentication first
   projectsAPIRouter
 ); // if authenticated, proceed to the route handler
+// Add versioned routes accordingly
+app.use("/api/v1/projects", projectsAPIRouter); // v1 uses the same as the default /api/projects
+// v2 users the new router object defined in a separate file
+app.use("/api/v2/projects", projectsAPIRouterV2);
 // Connect to MongoDB
 mongoose
   .connect(configs.ConnectionStrings.MongoDB)

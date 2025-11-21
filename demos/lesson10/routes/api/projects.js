@@ -18,6 +18,26 @@ const PAGE_SIZE = 10;
  *         description: Returns an unfiltered list of projects
  */
 router.get("/", async (req, res, next) => {
+  // Versioning using query parameter "v"
+  // e.g. https://localhost:3000/api/projects?v=2
+  let version = req.query.v || "1";
+  // Switch based on version
+  switch (version) {
+    case "1":
+      getProjectsV1(req, res, next);
+      break;
+    case "2":
+      getProjectsV2(req, res, next);
+      break;
+    default:
+      res.status(400).json({ ErrorMessage: "Version not supported!" });
+  }
+});
+
+// Methods for query paramenter based versioning
+// The idea is to have a different method for each version of the API logic and call the appropriate on based
+// on the version query parameter
+async function getProjectsV1(req, res, next) {
   // Optimize by adding pagination
   // Retrieve page number from query params, default to page 1 if not present
   // https://localhost:3000/api/projects?page=2
@@ -47,7 +67,17 @@ router.get("/", async (req, res, next) => {
     .limit(PAGE_SIZE) // limit result set to page size
     .skip(skip); // skip number of documents based on page number and page size
   res.status(200).json(projects);
-});
+}
+
+async function getProjectsV2(req, res, next) {
+  let projects = await Project.find().sort({ course: 1 });
+  let result = {
+    count: projects.length,
+    projects: projects
+  }
+  res.status(200).json(result);
+}
+
 
 // POST /projects
 router.post("/", async (req, res, next) => {
