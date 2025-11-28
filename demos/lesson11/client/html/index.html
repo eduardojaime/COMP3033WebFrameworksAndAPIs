@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client Example</title>
+</head>
+
+<body>
+    <h1>API Client Example</h1>
+    <p>This is a simple HTML page to demonstrates consuming an API.</p>
+    <!-- Table that will render our data -->
+     <table>
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Status</th>
+                <th>Due Date</th>
+            </tr>
+        </thead>
+        <tbody id="projectsTable">
+            <!-- Content will be rendered by jQuery -->
+        </tbody>
+     </table>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script>
+        var apiUrl = "http://localhost:3000/api/projects";
+        $(document).ready(function() {
+            // triggers when page is loaded completely
+            // use ajax to call the API and render data in the table
+            var projectsTable = $("#projectsTable");
+
+            $.get(
+                apiUrl,
+                function(data, status) {
+                    // Testing output
+                    console.log("Data: ", data);
+                    console.log("Status: ", status);
+                    // Generate table rows
+                    data.forEach(element => {
+                        projectsTable.append(
+                            `<tr>
+                                <td>${element.name}</td>
+                                <td>${element.status}</td>
+                                <td>${new Date(element.dueDate).toLocaleDateString()}</td>
+                            </tr>`
+                        );
+                    });
+                }
+            );
+        });
+    </script>
+</body>
+</html>

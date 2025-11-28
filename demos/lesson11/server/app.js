@@ -25,13 +25,27 @@ const swaggerJSDoc = require("swagger-jsdoc");
 var cors = require("cors");
 const project = require("./models/project");
 
+// CORS option example
+// In case your API is only accessed from specific origins
+// Be careful with http|https and port numbers
+// as well as '/' at the end of the URL
+// domain must match exactly
+var corsOptions = {
+  // origin: 'https://webapp.ca', // deployed client
+  // origin: 'http://localhost:3000', // local express client
+  origin: 'http://localhost:4200', // local angular client
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
 var app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
-// Enable CORS for all routes
-app.use(cors()); 
+// Enable CORS for all routes without domain restrictions
+app.use(cors());
+// Example with options
+// app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
