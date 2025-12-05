@@ -1,0 +1,19 @@
+{
+  "name": "mcp-server",
+  "version": "1.0.0",
+  "description": "This is an MCP server that exposes serveral tools for Agents.",
+  "keywords": [
+    "MCP"
+  ],
+  "license": "ISC",
+  "author": "Eduardo Jaime",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.24.3",
+    "zod": "^4.1.13"
+  }
+}
