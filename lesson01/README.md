@@ -54,15 +54,48 @@ If you prefer, use the [AniDB HTTP API definition](https://wiki.anidb.net/HTTP_A
 
 If the AniDB endpoint requires authentication, registration, a client identifier, or a specific request format, follow the requirements in the current AniDB documentation. Do not submit any private credentials.
 
-## Submission
+## Alternative: Spotify Web API and a Favorite Artist 🎵
 
-Collect the following information in your repository:
+If you prefer, use the [Spotify Web API documentation](https://developer.spotify.com/documentation/web-api) to retrieve information about one of your favorite artists.
 
-- Name and link of the API selected from the directory, or confirmation that you completed the AniDB alternative.
-- API documentation URL.
-- Request method and redacted endpoint.
-- Authentication model and any required parameters.
-- Response status code.
-- JSON response or a readable excerpt of the returned data.
-- A short explanation of what the response represents.
-- At least two fields identified from the response.
+1. Read the [Spotify Web API documentation](https://developer.spotify.com/documentation/web-api), especially the authentication and artists sections.
+2. Create or use a Spotify developer application and obtain the credentials required for authorization.
+3. Authenticate using the method documented by Spotify. Do not commit a client secret, access token, or other credential to GitHub.
+4. Search for your favorite artist using the **Search for an Item** endpoint:
+
+   ```text
+   GET https://api.spotify.com/v1/search?q=ARTIST_NAME&type=artist
+   ```
+
+5. Record the artist's Spotify ID from the search response.
+6. Retrieve the artist's information using the [Get Artist endpoint](https://developer.spotify.com/documentation/web-api/reference/get-an-artist):
+
+   ```text
+   GET https://api.spotify.com/v1/artists/{id}
+   ```
+
+7. Print the returned artist information in a readable format. Include useful properties such as:
+   - Artist name
+   - Spotify artist ID
+   - Genres
+   - Popularity
+   - Follower count
+   - Spotify URL
+8. Include the request method, redacted endpoint, response status, and relevant response data in your submission.
+
+If you use an access token, replace it with `[REDACTED]` in screenshots, notes, URLs, and response examples. Follow Spotify's current developer terms, authentication requirements, and rate limits.
+
+## Checklist
+
+Before considering this lesson complete, confirm each item:
+
+- [ ] An API was selected from the directory, or an alternative activity was completed using AniDB or Spotify.
+- [ ] The API name and link were recorded, or the AniDB activity or Spotify artist name was documented.
+- [ ] The API documentation URL was included.
+- [ ] The request method and a redacted endpoint were recorded.
+- [ ] The authentication model and any required parameters were documented.
+- [ ] The response status code was recorded.
+- [ ] The JSON response or a readable excerpt of the returned data was included.
+- [ ] The response contents were explained.
+- [ ] At least two useful fields from the response were identified.
+- [ ] API keys, access tokens, client secrets, and other credentials were removed.
