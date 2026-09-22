@@ -1,7 +1,8 @@
 # Custom
-legacy
-archive
-labs
+legacy/
+archive/
+labs/
+*/IMPROVEMENTS.md
 
 # Logs
 logs
