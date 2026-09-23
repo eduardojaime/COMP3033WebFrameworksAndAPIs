@@ -18,8 +18,8 @@ By the end of the lesson, you should be able to:
 
 - A computer with an internet connection.
 - [Visual Studio Code](https://code.visualstudio.com/).
-- [Python 3](https://www.python.org/downloads/).
-- The **Python** extension for Visual Studio Code by Microsoft.
+- Latest [Python 3.x](https://www.python.org/downloads/) via the Python Install Manager.
+- The [**Python** extension for Visual Studio Code by Microsoft](https://marketplace.visualstudio.com/items?itemName=ms-python.python).
 - A basic understanding of HTTP requests and JSON.
 
 ## Part 1: Verify Python and pip
