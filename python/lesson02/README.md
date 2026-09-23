@@ -27,11 +27,11 @@ By the end of the lesson, you should be able to:
 Open a terminal in Visual Studio Code and run:
 
 ```powershell
-python --version
-python -m pip --version
+py --version
+py -m pip --version
 ```
 
-Both commands should display a version number. If `python` is not recognized on Windows, try:
+Both commands should display a version number. If `py` is not recognized on Windows, verify that Python is installed correctly and that the Python launcher is available.
 
 ```powershell
 py --version
@@ -61,28 +61,28 @@ A virtual environment keeps this lesson's Python packages separate from other pr
 ### Windows PowerShell
 
 ```powershell
-python -m venv .venv
+py -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
 ### Windows Command Prompt
 
 ```cmd
-python -m venv .venv
+py -m venv .venv
 .venv\Scripts\activate.bat
 ```
 
 ### macOS or Linux
 
 ```bash
-python3 -m venv .venv
+py -m venv .venv
 source .venv/bin/activate
 ```
 
 After activation, the terminal usually displays `(.venv)` before the prompt. Confirm that the environment is active:
 
 ```powershell
-python -c "import sys; print(sys.executable)"
+py -c "import sys; print(sys.executable)"
 ```
 
 To leave the virtual environment, run:
@@ -122,14 +122,14 @@ FastAPI provides the web framework. Uvicorn is the ASGI server used to run the F
 With the virtual environment activated, install the dependencies:
 
 ```powershell
-python -m pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
 
 You can verify the installation with:
 
 ```powershell
-python -m pip show fastapi
-python -m pip show uvicorn
+py -m pip show fastapi
+py -m pip show uvicorn
 ```
 
 ## Part 6: Create a simple FastAPI server
@@ -169,9 +169,9 @@ The command means:
 - `--reload` restarts the server when source files change.
 - `--port 3000` uses the same port as the Node.js lesson.
 
-### Why use Uvicorn instead of `python server.py`?
+### Why use Uvicorn instead of `py server.py`?
 
-Running `python server.py` executes the Python file once and then exits unless the file contains additional code that starts a web server. Creating a FastAPI object does not, by itself, open a network port or listen for HTTP requests.
+Running `py server.py` executes the Python file once and then exits unless the file contains additional code that starts a web server. Creating a FastAPI object does not, by itself, open a network port or listen for HTTP requests.
 
 Uvicorn is an **ASGI server** (Asynchronous Server Gateway Interface). It provides the runtime that:
 
@@ -245,7 +245,7 @@ Test the following requests and record the results:
 Make sure the virtual environment is active and install the dependencies again:
 
 ```powershell
-python -m pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
 
 ### Uvicorn cannot find `server:app`
@@ -279,7 +279,7 @@ Before considering this lesson complete, confirm each item:
 - [ ] A `.venv` virtual environment was created and activated.
 - [ ] The correct Python interpreter was selected in Visual Studio Code.
 - [ ] `requirements.txt` contains FastAPI and Uvicorn.
-- [ ] The dependencies were installed with `python -m pip install -r requirements.txt`.
+- [ ] The dependencies were installed with `py -m pip install -r requirements.txt`.
 - [ ] `server.py` contains a working FastAPI application.
 - [ ] The root route returns a JSON response.
 - [ ] The path-parameter route returns a personalized response.
