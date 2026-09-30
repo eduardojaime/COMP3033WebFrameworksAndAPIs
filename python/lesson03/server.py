@@ -31,5 +31,6 @@ app = FastAPI(title="Project Management API", description="Demo API for managing
 # Functionality is defined as a Python function that returns the list of projects
 def list_projects() -> list[Project]:
     # here you would put your business logic, like database access, processing, filters, pagination, sorting, etc.
-    # for now just return the list we have 
+    # for now just return the list we have
+    # VIEW fastapi will handle the serialization of the list of Project objects to JSON and return it as the response body
     return projects_list
