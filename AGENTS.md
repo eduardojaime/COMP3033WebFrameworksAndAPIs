@@ -7,6 +7,9 @@ This repository is a course codebase for COMP3033 Web Frameworks and APIs. It co
 - `lesson01/` contains API exploration notes.
 - `nodejs/lesson02/` contains standalone Node.js HTTP, Connect, and Express examples.
 - `python/lesson02/` contains Python virtual-environment, FastAPI, and Uvicorn examples.
+- `python/lesson03/` contains a FastAPI app with Pydantic response models.
+- `python/lesson04/` contains a read-only FastAPI app with Pydantic response models, a `db/` module (`connection.py`, `models.py`) using SQLAlchemy mapped model classes, PostgreSQL, and Alembic migrations.
+- `python/lesson05/` contains the planned FastAPI CRUD extension with Pydantic request/response schemas, SQLAlchemy sessions, and project management endpoints.
 - `lesson02/` may contain legacy or earlier lesson material; prefer the language-specific lesson folder when working on the current Node.js or Python version.
 - `lesson03/` through `lesson10/` contain progressively extended Express/Mongoose applications.
 - `lesson11/` contains a CORS-enabled server and browser/Node.js clients.

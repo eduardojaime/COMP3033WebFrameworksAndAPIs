@@ -81,6 +81,8 @@ __pycache__/
 .env
 ```
 
+Note: You can also copy over the contents of this file to yours: [Python.gitignore](https://github.com/github/gitignore/blob/main/Python.gitignore)
+
 Do not commit the virtual environment or generated Python cache files.
 
 ## Part 4: Install FastAPI, Pydantic, and Uvicorn

@@ -19,3 +19,14 @@ Source code and lecture materials for COMP3033 Web Frameworks and APIs.
 | 11 | CORS and consuming APIs with jQuery and Node.js clients | [Lesson 11](lesson11/README.md) |
 | 12 | Creating, running, and deploying Serverless JavaScript Azure Functions | [Lesson 12](lesson12/README.md) |
 | 13 | Model Context Protocol (MCP) server | To do |
+
+## Python track
+
+A parallel Python/FastAPI track mirrors the early Node.js lessons.
+
+| Lesson | Topics | Materials |
+| --- | --- | --- |
+| 02 | Python virtual environments, FastAPI, and Uvicorn fundamentals | [Lesson 02](python/lesson02/README.md) |
+| 03 | FastAPI routing and Pydantic response models | [Lesson 03](python/lesson03/README.md) |
+| 04 | Database-backed project reads, SQLAlchemy mapped models, PostgreSQL, and Alembic migrations | [Lesson 04](python/lesson04/README.md) |
+| 05 | CRUD operations, request validation, and project management endpoints | [Lesson 05](python/lesson05/README.md) |
