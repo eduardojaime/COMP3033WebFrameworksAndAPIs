@@ -31,117 +31,7 @@ By the end of the lesson, you should be able to:
 - A [Render.com](https://render.com), [Supabase](https://supabase.com), or [Neon](https://neon.com) account for hosting a PostgreSQL database, or access to another PostgreSQL instance.
 - [Postman](https://www.postman.com/downloads/) for testing the `GET` request.
 
-## Part 1: Create the project
-
-Create or open the `python/lesson04` folder in Visual Studio Code. The
-finished project structure looks like this:
-
-```text
-lesson04/
-├── .env.example
-├── .gitignore
-├── README.md
-├── requirements.txt
-├── server.py
-├── db/
-│   ├── __init__.py
-│   ├── connection.py
-│   └── models.py
-├── schemas/
-│   ├── __init__.py
-│   └── project.py
-└── alembic/
-    ├── env.py
-    ├── script.py.mako
-    └── versions/
-```
-
-Database code now lives in its own `db` module instead of a single file.
-`db/connection.py` owns the engine, session factory, and declarative `Base`
-class. `db/models.py` owns the SQLAlchemy mapped model classes that describe
-database tables. The `schemas` package owns the Pydantic response models,
-with one module per entity (`schemas/project.py`) re-exported through
-`schemas/__init__.py`. This separation keeps database concerns apart from API
-response concerns, and keeps each growing as more entities are added.
-
-## Part 2: Create and activate a virtual environment
-
-Run these commands from the `python/lesson04` folder.
-
-### Windows PowerShell
-
-```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-### Windows Command Prompt
-
-```cmd
-py -m venv .venv
-.venv\Scripts\activate.bat
-```
-
-### macOS or Linux
-
-```bash
-py -m venv .venv
-source .venv/bin/activate
-```
-
-Confirm that the virtual environment's Python interpreter is being used:
-
-```powershell
-py -c "import sys; print(sys.executable)"
-```
-
-## Part 3: Configure `.gitignore`
-
-You can copy the `.gitignore` content from the [Lesson 03 instructions](../lesson03/README.md#part-3-configure-gitignore), since the Python lessons use the same exclusions.
-
-Create `.gitignore` with:
-
-```gitignore
-.venv/
-__pycache__/
-*.py[cod]
-.env
-```
-
-Note: You can also copy over the contents of this file to yours: [Python.gitignore](https://github.com/github/gitignore/blob/main/Python.gitignore)
-
-The `.env` file holds your real PostgreSQL connection string and must never
-be committed.
-
-## Part 4: Install dependencies
-
-Create `requirements.txt`:
-
-```text
-fastapi
-pydantic
-uvicorn[standard]
-sqlalchemy
-alembic
-psycopg[binary]
-python-dotenv
-```
-
-- `sqlalchemy` provides the ORM used to define mapped model classes and talk
-  to the database.
-- `alembic` manages versioned database schema migrations generated from those
-  model classes.
-- `psycopg[binary]` is the PostgreSQL driver SQLAlchemy uses at runtime.
-- `python-dotenv` loads variables from a local `.env` file into the process
-  environment.
-
-With the virtual environment activated, install the dependencies:
-
-```powershell
-py -m pip install -r requirements.txt
-```
-
-## Part 5: Create a PostgreSQL database
+## Part 1: Create a PostgreSQL database
 
 Choose one PostgreSQL hosting option below and follow the matching steps.
 Each option produces a connection string used in Part 6.
@@ -216,6 +106,116 @@ the `psycopg` driver, SQLAlchemy, and Alembic used in this lesson.
    This is the connection string you will use in Part 6.
 6. Note that Render-hosted PostgreSQL databases require `sslmode=require` for
    external connections; add it to the URL if it is not already present.
+
+## Part 2: Create the project
+
+Create or open the `python/lesson04` folder in Visual Studio Code. The
+finished project structure looks like this:
+
+```text
+lesson04/
+├── .env.example
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── server.py
+├── db/
+│   ├── __init__.py
+│   ├── connection.py
+│   └── models.py
+├── schemas/
+│   ├── __init__.py
+│   └── project.py
+└── alembic/
+    ├── env.py
+    ├── script.py.mako
+    └── versions/
+```
+
+Database code now lives in its own `db` module instead of a single file.
+`db/connection.py` owns the engine, session factory, and declarative `Base`
+class. `db/models.py` owns the SQLAlchemy mapped model classes that describe
+database tables. The `schemas` package owns the Pydantic response models,
+with one module per entity (`schemas/project.py`) re-exported through
+`schemas/__init__.py`. This separation keeps database concerns apart from API
+response concerns, and keeps each growing as more entities are added.
+
+## Part 3: Create and activate a virtual environment
+
+Run these commands from the `python/lesson04` folder.
+
+### Windows PowerShell
+
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+### Windows Command Prompt
+
+```cmd
+py -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+### macOS or Linux
+
+```bash
+py -m venv .venv
+source .venv/bin/activate
+```
+
+Confirm that the virtual environment's Python interpreter is being used:
+
+```powershell
+py -c "import sys; print(sys.executable)"
+```
+
+## Part 4: Configure `.gitignore`
+
+You can copy the `.gitignore` content from the [Lesson 03 instructions](../lesson03/README.md#part-3-configure-gitignore), since the Python lessons use the same exclusions.
+
+Create `.gitignore` with:
+
+```gitignore
+.venv/
+__pycache__/
+*.py[cod]
+.env
+```
+
+Note: You can also copy over the contents of this file to yours: [Python.gitignore](https://github.com/github/gitignore/blob/main/Python.gitignore)
+
+The `.env` file holds your real PostgreSQL connection string and must never
+be committed.
+
+## Part 5: Install dependencies
+
+Create `requirements.txt`:
+
+```text
+fastapi
+pydantic
+uvicorn[standard]
+sqlalchemy
+alembic
+psycopg[binary]
+python-dotenv
+```
+
+- `sqlalchemy` provides the ORM used to define mapped model classes and talk
+  to the database.
+- `alembic` manages versioned database schema migrations generated from those
+  model classes.
+- `psycopg[binary]` is the PostgreSQL driver SQLAlchemy uses at runtime.
+- `python-dotenv` loads variables from a local `.env` file into the process
+  environment.
+
+With the virtual environment activated, install the dependencies:
+
+```powershell
+py -m pip install -r requirements.txt
+```
 
 ## Part 6: Configure environment variables
 
