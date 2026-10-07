@@ -443,17 +443,17 @@ Alembic can find the application's models and connection string:
    from db.connection import Base, DATABASE_URL
    from db import models  # noqa: F401  (registers Project on Base.metadata)
 
-    config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
+   config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
    target_metadata = Base.metadata
    ```
 
 2. Leave the `sqlalchemy.url` value in `alembic.ini` as a placeholder; the
-    line added above overrides it at runtime with the value from `.env`, so
-    the real connection string is never committed to `alembic.ini`. The
-    `.replace("%", "%%")` escape is needed because Alembic uses Python
-    configuration interpolation; it preserves percent-encoded password
-    characters when Alembic reads the URL.
+   line added above overrides it at runtime with the value from `.env`, so
+   the real connection string is never committed to `alembic.ini`. The
+   `.replace("%", "%%")` escape is needed because Alembic uses Python
+   configuration interpolation; it preserves percent-encoded password
+   characters when Alembic reads the URL.
 
 This repository's `python/lesson04/alembic/` folder already contains a
 working `env.py` configured this way, so you can compare your output to it.
