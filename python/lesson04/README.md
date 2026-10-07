@@ -146,41 +146,39 @@ py -m pip install -r requirements.txt
 Choose one PostgreSQL hosting option below and follow the matching steps.
 Each option produces a connection string used in Part 6.
 
-### Option A: Render.com
+### Option A: Supabase
 
-> **Placeholder:** this section will be expanded with current Render.com
-> screenshots and exact UI labels. Follow along with the instructor if the
-> Render interface has changed since this was written.
-
-1. Go to [Render.com](https://render.com) and sign in, or create a free account.
-2. From the dashboard, select **New** > **PostgreSQL**.
-3. Give the database a name, for example `project-tracker-db`, choose a
-   region close to you, and select the free instance type.
-4. Select **Create Database** and wait for it to become available.
-5. Open the database's **Info** page and copy the **External Database URL**.
-   This is the connection string you will use in Part 6.
-6. Note that Render-hosted PostgreSQL databases require `sslmode=require` for
-   external connections; add it to the URL if it is not already present.
-
-### Option B: Supabase
-
-> **Placeholder:** this section will be expanded with current Supabase
-> screenshots and exact UI labels. Follow along with the instructor if the
-> Supabase interface has changed since this was written.
-
-1. Go to [Supabase](https://supabase.com) and sign in, or create a free account.
+1. Go to [Supabase](https://supabase.com) and sign in, or create a free account. **Recommendation:** Sign in using your GitHub Credentials.
 2. Select **New project**, choose an organization, give the project a name,
-   for example `project-tracker-db`, set a database password, and choose a
-   region close to you.
+   for example `project-tracker-db`, set a strong database password, and choose a
+   region close to you (Canada Central).
 3. Wait for the project's database to finish provisioning.
-4. Open **Project Settings** > **Database** and copy the **Connection
-   string** (URI format). This is the connection string you will use in
-   Part 6.
-5. Supabase connection strings use the `postgres://` scheme and require
-   `sslmode=require`; keep that in the URL when you adapt it for SQLAlchemy
-   in Part 6.
+4. Open **Database** > **Connect**. Under the connection method, select
+   **Session Pooler** and copy the **URI** connection string. Use the session
+   pooler rather than Direct connection when the network cannot reach the
+   direct endpoint (for example, on an IPv4-only network).
+5. The URI will look similar to this; Supabase supplies the actual username
+   and host for your project, so copy those values rather than typing this
+   example literally:
 
-### Option C: Neon
+   ```text
+   postgresql://postgres.<project-ref>:[YOUR-PASSWORD]@aws-1-ca-central-1.pooler.supabase.com:5432/postgres?sslmode=require
+   ```
+
+   Replace `[YOUR-PASSWORD]` with the database password. If it contains URI
+   reserved characters such as `@`, `:`, `#`, `?`, `/`, or a space, percent-encode
+   them in the URI. Keep `sslmode=require` so the connection uses SSL. Never
+   commit a connection string containing the real password.
+6. To test the connection in Visual Studio Code, install the
+   [PostgreSQL extension by Microsoft](https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-pgsql),
+   open its PostgreSQL view, and select **Add New Connection**. Choose
+   **Connection String**, paste the URI, select **Test Connection**, then
+   **Save & Connect**.
+7. Use the same URI in the `.env` file in Part 6. Change its scheme to
+   `postgresql+psycopg://` for SQLAlchemy and keep the remaining connection
+   details and query parameters, including `sslmode=require`, unchanged.
+
+### Option B: Neon
 
 > **Placeholder:** this section will be expanded with current Neon screenshots
 > and exact UI labels. Follow along with the instructor if the Neon interface
@@ -202,6 +200,22 @@ Each option produces a connection string used in Part 6.
 
 Neon speaks the standard PostgreSQL protocol, so the connection works with
 the `psycopg` driver, SQLAlchemy, and Alembic used in this lesson.
+
+### Option C: Render.com
+
+> **Placeholder:** this section will be expanded with current Render.com
+> screenshots and exact UI labels. Follow along with the instructor if the
+> Render interface has changed since this was written.
+
+1. Go to [Render.com](https://render.com) and sign in, or create a free account.
+2. From the dashboard, select **New** > **PostgreSQL**.
+3. Give the database a name, for example `project-tracker-db`, choose a
+   region close to you, and select the free instance type.
+4. Select **Create Database** and wait for it to become available.
+5. Open the database's **Info** page and copy the **External Database URL**.
+   This is the connection string you will use in Part 6.
+6. Note that Render-hosted PostgreSQL databases require `sslmode=require` for
+   external connections; add it to the URL if it is not already present.
 
 ## Part 6: Configure environment variables
 
@@ -429,14 +443,17 @@ Alembic can find the application's models and connection string:
    from db.connection import Base, DATABASE_URL
    from db import models  # noqa: F401  (registers Project on Base.metadata)
 
-   config.set_main_option("sqlalchemy.url", DATABASE_URL)
+    config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
    target_metadata = Base.metadata
    ```
 
 2. Leave the `sqlalchemy.url` value in `alembic.ini` as a placeholder; the
-   line added above overrides it at runtime with the value from `.env`, so
-   the real connection string is never committed to `alembic.ini`.
+    line added above overrides it at runtime with the value from `.env`, so
+    the real connection string is never committed to `alembic.ini`. The
+    `.replace("%", "%%")` escape is needed because Alembic uses Python
+    configuration interpolation; it preserves percent-encoded password
+    characters when Alembic reads the URL.
 
 This repository's `python/lesson04/alembic/` folder already contains a
 working `env.py` configured this way, so you can compare your output to it.

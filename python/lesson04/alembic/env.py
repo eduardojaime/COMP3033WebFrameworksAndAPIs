@@ -18,7 +18,7 @@ config = context.config
 
 # Override the sqlalchemy.url placeholder from alembic.ini with the
 # application's real connection string, kept in one place (.env).
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
