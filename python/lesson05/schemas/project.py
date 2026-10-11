@@ -15,10 +15,21 @@ ProjectStatus = Literal["Not Started", "In Progress", "Completed"]
 class ProjectBase(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     due_date: date
+    status: ProjectStatus
+
+
+class ProjectCreate(ProjectBase):
+    """Validates the body of POST /api/projects/."""
+
     status: ProjectStatus = "Not Started"
 
+
+class ProjectUpdate(ProjectBase):
+    """Validates the complete replacement body of PUT /api/projects/{id}."""
+
+
 class ProjectRead(ProjectBase):
-    """Serializes a Project row in API responses."""
+    """Serializes a Project row in an API response."""
 
     model_config = ConfigDict(from_attributes=True)
 

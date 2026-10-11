@@ -5,10 +5,18 @@ db/models.py groups SQLAlchemy mapped classes. Schemas are re-exported here
 so callers can keep writing `from schemas import ProjectRead` instead of
 reaching into submodules.
 """
-from schemas.project import ProjectBase, ProjectRead, ProjectStatus
+from schemas.project import (
+    ProjectBase,
+    ProjectCreate,
+    ProjectRead,
+    ProjectStatus,
+    ProjectUpdate,
+)
 
 __all__ = [
     "ProjectBase",
+    "ProjectCreate",
     "ProjectRead",
     "ProjectStatus",
+    "ProjectUpdate",
 ]

@@ -28,5 +28,5 @@ A parallel Python/FastAPI track mirrors the early Node.js lessons.
 | --- | --- | --- |
 | 02 | Python virtual environments, FastAPI, and Uvicorn fundamentals | [Lesson 02](python/lesson02/README.md) |
 | 03 | FastAPI routing and Pydantic response models | [Lesson 03](python/lesson03/README.md) |
-| 04 | Database-backed project reads, SQLAlchemy mapped models, PostgreSQL, and Alembic migrations | [Lesson 04](python/lesson04/README.md) |
-| 05 | CRUD operations, request validation, and project management endpoints | [Lesson 05](python/lesson05/README.md) |
+| 04 | Read-only database-backed project API with SQLAlchemy, PostgreSQL, and Alembic | [Lesson 04](python/lesson04/README.md) |
+| 05 | PostgreSQL project CRUD endpoints (`GET`, `POST`, `PUT`, `DELETE`) and request validation | [Lesson 05](python/lesson05/README.md) |

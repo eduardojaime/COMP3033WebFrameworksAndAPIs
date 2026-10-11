@@ -3,8 +3,9 @@
 In this lesson, you will extend the Lesson 03 project-tracker API so that it
 reads projects from a PostgreSQL database using SQLAlchemy's code-first mapped
 model classes. You will also use Alembic to manage the database schema with
-migrations. This lesson intentionally covers the **Read** part of CRUD only;
-create, update, and delete operations are introduced later.
+migrations. This lesson intentionally covers the **Read** part of CRUD only.
+The next step, including **Create**, **Update**, and **Delete**, is covered in
+[Lesson 05](../lesson05/README.md).
 
 ## Learning objectives
 
@@ -404,9 +405,23 @@ def list_projects(db: Session = Depends(get_db)) -> list[Project]:
     return db.query(Project).all()
 ```
 
-`Depends(get_db)` is FastAPI's dependency injection: FastAPI calls
-`get_db()` for the request, passes the session into `db`, and closes it after
-the query is complete.
+`Depends(get_db)` tells FastAPI that `db` must be provided by the `get_db`
+dependency rather than by the client or by the route function itself. This is
+dependency injection: the route declares what it needs, and FastAPI supplies
+that value when it calls the route. Here, `Session` is a database session; it
+is not a request-body or query-string parameter.
+
+For each request to this route, FastAPI:
+
+1. Calls `get_db()` to create a database session.
+2. Injects the yielded session into the route's `db` parameter.
+3. Runs the route, which uses that session to query `Project` rows.
+4. Resumes `get_db()` after the route finishes and runs its `finally` block to
+    close the session, including when the route raises an error.
+
+This keeps session setup and cleanup out of the route and ensures the session
+does not remain open after the request. The same dependency pattern can provide
+other shared resources, such as configuration or authenticated-user details.
 
 ## Part 10: Run the API
 
@@ -421,8 +436,9 @@ error on startup instead of failing silently later. Once it starts, open:
 
 - [http://localhost:3000/docs](http://localhost:3000/docs)
 
-The `/api/projects/` list should return an empty array, because the
-`projects` table does not exist yet. Continue to Part 11 to create it.
+Do not request `/api/projects/` until the `projects` table exists; the query
+cannot succeed before the table is created. Continue to Part 11 to create it,
+then confirm the endpoint returns an empty array in Part 13.
 
 ## Part 11: Initialize Alembic
 
@@ -494,8 +510,8 @@ backed by a real `projects` table in PostgreSQL instead of an in-memory list.
 5. Restart the API process and send **Project List** again. The request
     should still succeed, proving that the endpoint reads from PostgreSQL.
 
-This lesson does not add projects through the API. The `POST`, `PATCH`, and
-`DELETE` operations will be introduced in a later CRUD lesson.
+This lesson does not add projects through the API. The project `POST`, `PUT`,
+and `DELETE` operations are implemented in [Lesson 05](../lesson05/README.md).
 
 ## Part 14: Exercise - add a column with a second migration
 

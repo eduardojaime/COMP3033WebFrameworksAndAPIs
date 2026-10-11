@@ -4,7 +4,7 @@
 
 | Who | What | How | Input | Output | Status Codes |
 |-|-|-|-|-|-
-| User | Manage Projects | Search for Projects | Nothing or project name | List of matching projects | TBD |
+| User | Manage Projects | List projects | Nothing | List of projects | TBD |
 | - | - | Add new Projects | Project information | New project information | TBD |
 | - | - | Update Projects | Project information | Updated project information | TBD |
 | - | - | Delete Projects | Project ID | Nothing | TBD |
@@ -17,7 +17,7 @@
 
 | What | How | Endpoint | Parameters | Method | Description | Status Codes |
 |-|-|-|-|-|-|-
-| Manage Projects | Search for projects | `/api/projects/` | None for now | `GET` | Lists all projects in the database | `200` on success |
+| Manage Projects | List projects | `/api/projects/` | None | `GET` | Lists all projects in the database | `200` on success |
 | - | Create new project | `/api/projects/` | Project information in the request body as JSON | `POST` | Inserts the given project into the database | `201` on success, `422` for invalid input |
 | - | Update a project | `/api/projects/{project_id}` | `project_id` path parameter and complete project object in the request body | `PUT` | Replaces a project in the database | `200` on success, `404` if not found, `422` for invalid input |
 | - | Delete a project | `/api/projects/{project_id}` | `project_id` path parameter | `DELETE` | Deletes the project with the specified ID | `204` on success, `404` if not found |
@@ -46,7 +46,7 @@ By the end of this lesson, you should be able to:
 - Python 3.x installed. On Windows, the Python launcher is usually available as `py`.
 - Visual Studio Code and the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python).
 - A PostgreSQL database on Render.com, Supabase, Neon, or another PostgreSQL provider.
-- The Lesson 04 virtual environment and dependencies.
+- A virtual environment for this lesson and its installed dependencies.
 - [Postman](https://www.postman.com/downloads/) for testing requests.
 
 ## Part 3: Review the project structure
@@ -93,8 +93,8 @@ instructions:
 - [Supabase](https://supabase.com)
 - [Neon](https://neon.com)
 
-From the `python/lesson05` folder, create and activate a virtual environment
-if needed, install the dependencies, and configure `DATABASE_URL` in `.env`:
+From the `python/lesson05` folder, create and activate this lesson's virtual
+environment, install its dependencies, and configure `DATABASE_URL` in `.env`:
 
 ```powershell
 py -m venv .venv
@@ -134,11 +134,13 @@ ProjectStatus = Literal["Not Started", "In Progress", "Completed"]
 class ProjectBase(BaseModel):
 	name: str = Field(min_length=1, max_length=100)
 	due_date: date
-	status: ProjectStatus = "Not Started"
+	status: ProjectStatus
 
 
 class ProjectCreate(ProjectBase):
 	"""Validates the body of POST /api/projects/."""
+
+	status: ProjectStatus = "Not Started"
 
 
 class ProjectUpdate(ProjectBase):
@@ -157,8 +159,10 @@ class ProjectRead(ProjectBase):
 
 The schemas have different responsibilities:
 
-- `ProjectCreate` validates data supplied by a client creating a project.
-- `ProjectUpdate` validates data supplied by a client replacing a project.
+- `ProjectCreate` validates data supplied by a client creating a project;
+  `status` is optional and defaults to `Not Started`.
+- `ProjectUpdate` validates data supplied by a client replacing a project;
+  every project field, including `status`, is required.
 - `ProjectRead` controls the shape of data returned by the API.
 - `ProjectBase` avoids repeating common project fields.
 
