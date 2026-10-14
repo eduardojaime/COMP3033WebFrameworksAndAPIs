@@ -17,11 +17,11 @@ class Project(Base):
     __tablename__ = "projects"
     # Define fields (columns) in the table using mapped_column and indicate their types and constraints
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    # Required fields use Nullable=False, while optional fields use Nullable=True or omit this value (default is True)
-    name: Mapped[str] = mapped_column(Nullable=False)
-    due_date: Mapped[date] = mapped_column(Nullable=False)
-    status: Mapped[str] = mapped_column(Nullable=False, default="TO DO", enum=["TO DO", "IN PROGRESS", "DONE"])
+    # Required fields use nullable=False, while optional fields use nullable=True or omit this value (default is True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    due_date: Mapped[date] = mapped_column(nullable=False)
+    status: Mapped[str] = mapped_column(nullable=False, default="TO DO")
     # Other fields can be added too as needed
-    description: Mapped[str] = mapped_column(Nullable=True) # not required
+    description: Mapped[str] = mapped_column(nullable=True) # not required
     created_at: Mapped[datetime] = mapped_column(server_default=func.now()) # automatically set to current timestamp when record is created
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now()) # to keep track of updates to the record
