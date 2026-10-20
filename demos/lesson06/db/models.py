@@ -23,5 +23,7 @@ class Project(Base):
     status: Mapped[str] = mapped_column(nullable=False, default="TO DO")
     # Other fields can be added too as needed
     description: Mapped[str] = mapped_column(nullable=True) # not required
+    # Additional field to practice migrations
+    # priority: Mapped[str] = mapped_column(nullable=False, default="Normal") # Other values are "Low", "High", and "Critical"
     created_at: Mapped[datetime] = mapped_column(server_default=func.now()) # automatically set to current timestamp when record is created
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now()) # to keep track of updates to the record
