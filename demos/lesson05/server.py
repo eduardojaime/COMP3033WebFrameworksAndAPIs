@@ -1,6 +1,6 @@
 # Import libraries
 # WebAPI related
-from fastapi import FastAPI, Depends, HttpException, Response, status
+from fastapi import FastAPI, Depends, HTTPException, Response, status
 # Database related
 from sqlalchemy.orm import Session # to manage db connections and sessions
 # db modules
