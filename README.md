@@ -30,3 +30,4 @@ A parallel Python/FastAPI track mirrors the early Node.js lessons.
 | 03 | FastAPI routing and Pydantic response models | [Lesson 03](python/lesson03/README.md) |
 | 04 | Read-only database-backed project API with SQLAlchemy, PostgreSQL, and Alembic | [Lesson 04](python/lesson04/README.md) |
 | 05 | PostgreSQL project CRUD endpoints (`GET`, `POST`, `PUT`, `DELETE`) and request validation | [Lesson 05](python/lesson05/README.md) |
+| 06 | GitHub branching workflow, Render deployment, and lifecycle promotion for FastAPI | [Lesson 06](python/lesson06/README.md) |
