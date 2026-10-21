@@ -17,10 +17,9 @@ WITH sample_projects AS (
         ])[((series.n - 1) % 6) + 1] AS course,
         (ARRAY[
             'TO DO',
-            'STARTED',
-            'DONE',
-            'CANCELLED'
-        ])[((series.n - 1) % 4) + 1] AS status
+            'IN PROGRESS',
+            'DONE'
+        ])[((series.n - 1) % 3) + 1] AS status
     FROM generate_series(1, 1000) AS series(n)
 )
 INSERT INTO projects (name, due_date, course, status)
