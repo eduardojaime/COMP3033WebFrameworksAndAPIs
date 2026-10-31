@@ -9,19 +9,20 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-ProjectStatus = Literal["Not Started", "In Progress", "Completed"]
+ProjectStatus = Literal["TO DO", "IN PROGRESS", "DONE"]
 
 
 class ProjectBase(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     due_date: date
+    course: str = Field(min_length=1, max_length=100)
     status: ProjectStatus
 
 
 class ProjectCreate(ProjectBase):
     """Validates the body of POST /api/projects/."""
 
-    status: ProjectStatus = "Not Started"
+    status: ProjectStatus = "TO DO"
 
 
 class ProjectUpdate(ProjectBase):

@@ -1,5 +1,5 @@
 # for creating the WebAPI application and handling CRUD responses
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 # for a typed database session parameter
 from sqlalchemy.orm import Session
 
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from db.connection import get_db
 from db.models import Project
 # request and response validation schemas
-from schemas import ProjectCreate, ProjectRead, ProjectUpdate
+from schemas import ProjectCreate, ProjectRead, ProjectStatus, ProjectUpdate
 
 # Declare the app object
 # Swagger UI will be available at http://localhost:3000/docs and ReDoc at http://localhost:3000/redoc
@@ -22,10 +22,29 @@ app = FastAPI(
 @app.get(
     "/api/projects/",
     response_model=list[ProjectRead],
-    summary="Get all projects",
+    summary="Get projects with optional filters and pagination",
 )
-def list_projects(db: Session = Depends(get_db)) -> list[Project]:
-    return db.query(Project).all()
+def list_projects(
+    course: str | None = None,
+    status: ProjectStatus | None = None,
+    page: int = Query(default=1, ge=1),
+    db: Session = Depends(get_db),
+) -> list[Project]:
+    page_size = 10
+    query = db.query(Project)
+
+    if course is not None:
+        query = query.filter(Project.course == course)
+    if status is not None:
+        query = query.filter(Project.status == status)
+
+    # ID is a tie-breaker so pages are stable when names match
+    return (
+        query.order_by(Project.name.asc(), Project.id.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
 
 
 @app.post(
@@ -61,6 +80,7 @@ def update_project(
 
     project.name = payload.name
     project.due_date = payload.due_date
+    project.course = payload.course
     project.status = payload.status
 
     db.commit()
