@@ -106,6 +106,8 @@ The supplied SQL seed file expects the `projects` table to contain `name`, `due_
 
 Run [seed_projects.sql](seed_projects.sql) against the lesson database using your PostgreSQL provider's SQL editor or a PostgreSQL SQL client. The statement inserts 1,000 deterministic sample projects without deleting existing records. It is safe to run again: projects with the same lesson seed names are not inserted twice.
 
+As an alternative, generate additional synthetic project records with [Mockaroo](https://www.mockaroo.com/). Configure fields to match the `projects` table (`name`, `due_date`, `course`, and `status`), then export the data as CSV and import it into PostgreSQL. Do not include the `id`, `created_at`, or `updated_at` columns; the database generates those values. Use the course names and status values shown in `seed_projects.sql` so the generated rows work with the lesson's filters. Avoid importing duplicate project names if you want to keep the seed data distinct.
+
 For the expected pagination checks, use a clean lesson database (or an empty `projects` table). If other projects are already present, they remain in place and affect the page counts. Do not truncate a table containing work you need to keep.
 
 Confirm that rows were inserted and inspect the available values:
