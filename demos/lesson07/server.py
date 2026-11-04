@@ -1,6 +1,6 @@
 # Import libraries
 # WebAPI related
-from fastapi import FastAPI, Depends, HTTPException, Response, status
+from fastapi import FastAPI, Depends, HTTPException, Response, status, Query
 # Database related
 from sqlalchemy.orm import Session # to manage db connections and sessions
 # db modules
@@ -18,8 +18,23 @@ app = FastAPI(title="Project Tracker API", version="1.0.0", description="A simpl
 @app.get("/api/projects", response_model=list[ProjectRead], description="Retrieves all projects from the database.")
 # Dependency injection to get a database session for the request
 # The db parameter is automatically provided by FastAPI using the get_db function defined in db/connection.py
-def list_projects(db: Session = Depends(get_db)):
-    return db.query(Project).all() 
+# Pagination works by providing pageNumber and limit as query parameters
+# e.g.  /api/projects?pageNumber=1&limit=10 will return the first 10 projects
+#       /api/projects?pageNumber=2&limit=10 will return the next 10 projects, and so on
+def list_projects(
+    pageNumber: int = Query(default=1, ge=1), # limit or page size will be set programmatically
+    db: Session = Depends(get_db)):
+    # Pagination logic > calculate offset based on page number and hardcoded limit
+    limit = 10
+    offset = (pageNumber - 1) * limit # e.g. page 1 = offset 0, page 2 = offset 10, page 3 = offset 20, etc.
+    # Query the database for projects with limit and offset
+    return (
+        db.query(Project)
+        .order_by(Project.name.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 # POST /api/projects
 @app.post("/api/projects", 
