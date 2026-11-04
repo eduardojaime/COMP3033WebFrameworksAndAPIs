@@ -27,7 +27,7 @@ def list_projects(
     db: Session = Depends(get_db)
     ):
     # Pagination logic > calculate offset based on page number and hardcoded limit
-    limit = 10
+    limit = 100
     offset = (pageNumber - 1) * limit # e.g. page 1 = offset 0, page 2 = offset 10, page 3 = offset 20, etc.
 
     # construct query object so we can filter if needed
