@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session # to manage db connections and sessions
 from db.connection import get_db # to be able to pass a db connection to the route functions
 from db.models import Project
 # Pydantic schemas 
-from schemas import ProjectRead, ProjectCreate, ProjectUpdate
+from schemas import ProjectRead, ProjectCreate, ProjectUpdate, ProjectStatus
 
 # Declare the app object
 app = FastAPI(title="Project Tracker API", version="1.0.0", description="A simple API for managing school projects.")
@@ -23,13 +23,23 @@ app = FastAPI(title="Project Tracker API", version="1.0.0", description="A simpl
 #       /api/projects?pageNumber=2&limit=10 will return the next 10 projects, and so on
 def list_projects(
     pageNumber: int = Query(default=1, ge=1), # limit or page size will be set programmatically
-    db: Session = Depends(get_db)):
+    status: ProjectStatus | None = None, # optional filter by status, if not provided, all projects will be returned
+    db: Session = Depends(get_db)
+    ):
     # Pagination logic > calculate offset based on page number and hardcoded limit
     limit = 10
     offset = (pageNumber - 1) * limit # e.g. page 1 = offset 0, page 2 = offset 10, page 3 = offset 20, etc.
+
+    # construct query object so we can filter if needed
+    query = db.query(Project)
+
+    # condition to filter by status if provided (makes it optional)
+    if status is not None:
+        query = query.filter(Project.status == status)
+
     # Query the database for projects with limit and offset
     return (
-        db.query(Project)
+        query
         .order_by(Project.name.asc())
         .offset(offset)
         .limit(limit)
