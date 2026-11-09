@@ -32,3 +32,4 @@ A parallel Python/FastAPI track mirrors the early Node.js lessons.
 | 05 | PostgreSQL project CRUD endpoints (`GET`, `POST`, `PUT`, `DELETE`) and request validation | [Lesson 05](python/lesson05/README.md) |
 | 06 | GitHub branching workflow, Render deployment, and lifecycle promotion for FastAPI | [Lesson 06](python/lesson06/README.md) |
 | 07 | PostgreSQL query filtering, sorting, pagination, and bulk seeding | [Lesson 07](python/lesson07/README.md) |
+| 08 | Securing FastAPI endpoints with HTTP Basic, API keys, and bearer tokens | [Lesson 08](python/lesson08/README.md) |
