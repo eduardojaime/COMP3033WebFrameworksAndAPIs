@@ -34,3 +34,4 @@ A parallel Python/FastAPI track mirrors the early Node.js lessons.
 | 07 | PostgreSQL query filtering, sorting, pagination, and bulk seeding | [Lesson 07](python/lesson07/README.md) |
 | 08 | Securing FastAPI endpoints with HTTP Basic, API keys, and bearer tokens | [Lesson 08](python/lesson08/README.md) |
 | 09 | OpenAPI documentation: exploring FastAPI's generated Swagger UI, ReDoc, and `/openapi.json`, plus documentation metadata | [Lesson 09](python/lesson09/README.md) |
+| 10 | API versioning with query parameters and path-based `APIRouter` modules | [Lesson 10](python/lesson10/README.md) |
