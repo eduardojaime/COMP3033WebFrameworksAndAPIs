@@ -1,20 +1,22 @@
-# Python Lesson 08: Securing a FastAPI API
+# Python Lesson 09: API Documentation with OpenAPI and Swagger UI
 
 ## Learning objectives
 
 By the end of this lesson, you should be able to:
 
-- Protect FastAPI endpoints with HTTP Basic authentication.
-- Return an authentication challenge when credentials are missing or invalid.
-- Send Basic credentials with Postman.
-- Compare API keys and bearer tokens as alternatives for API authentication.
+- Describe what an OpenAPI Specification (OAS) document is and how it is structured.
+- Find the Swagger UI, ReDoc, and `/openapi.json` endpoints that FastAPI generates automatically.
+- Explain which parts of your Python code produce which parts of the generated documentation.
+- Improve the documentation with metadata: titles, tags, summaries, descriptions, and response codes.
+- Test the secured API from Swagger UI and import the specification into Postman.
 
 ## Prerequisites
 
 - Python 3.x and the dependencies listed in `requirements.txt`.
-- A PostgreSQL database configured for this lesson.
-- The project API from the earlier Python lessons.
-- [Postman](https://www.postman.com/downloads/) for testing requests.
+- A PostgreSQL database configured for this lesson (the same setup as Lesson 08).
+- [Postman](https://www.postman.com/downloads/) for the import exercise.
+
+This lesson starts from the finished Lesson 08 API (project CRUD endpoints protected with HTTP Basic). There is no documentation tooling to install: FastAPI generates the OpenAPI document and Swagger UI for you. This lesson is about understanding what is generated and how to improve it, so the code changes are small.
 
 ## Set up the lesson
 
@@ -26,214 +28,136 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Configure the lesson's `DATABASE_URL` in a local `.env` file, as in the earlier database lessons. Add local credentials for the HTTP Basic exercise:
+Copy `.env.example` to `.env` and replace the placeholder values with your local database URL and demo credentials. Never commit `.env` or real credentials.
 
-```dotenv
-BASIC_AUTH_USERNAME=lesson-user
-BASIC_AUTH_PASSWORD=replace-with-a-local-demo-password
+Start the API from this lesson's folder:
+
+```powershell
+uvicorn server:app --reload --port 3000
 ```
 
-Use your own local demo values. Never commit `.env` or real credentials.
+## Part 1: What is OpenAPI?
 
-## Part 1: Protect the project API with HTTP Basic
+The [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) (OAS, formerly known as Swagger) is a language-independent, machine-readable format for describing an HTTP API. An OAS document is written in JSON or YAML and lists the endpoints, parameters, request bodies, responses, and security requirements of an API.
 
-FastAPI includes HTTP Basic support in `fastapi.security`; no additional package is needed. A dependency can validate credentials and be attached to each project route.
+The same document can drive many tools: interactive documentation, client and server code generators, API testing tools, and API gateways.
 
-1. Create `config.py` in this lesson's folder. It loads `.env` once and fails clearly if a required setting is missing, for both the database and authentication settings:
+Explore the format with these references:
 
-   ```python
-   import os
+- [OpenAPI Map](https://openapi-map.apihandyman.io/) shows the structure of an OAS document and what each section is for.
+- [Swagger Editor](https://editor.swagger.io/) lets you write a YAML specification and see it rendered live. Paste the document from Part 2 into it to see how another tool renders it.
 
-   from dotenv import load_dotenv
+The main top-level sections of an OAS document are:
 
-   load_dotenv()
+| Section | Purpose |
+| --- | --- |
+| `openapi` | The version of the OpenAPI Specification used by the document |
+| `info` | Title, version, description, and contact details for the API |
+| `tags` | Names and descriptions used to group endpoints |
+| `paths` | Each endpoint, its HTTP methods, parameters, request body, and responses |
+| `components` | Reusable pieces: `schemas` (data models) and `securitySchemes` (authentication) |
 
+## Part 2: Explore what FastAPI generates
 
-   def required_setting(name: str) -> str:
-       value = os.getenv(name)
-       if not value:
-           raise RuntimeError(f"Missing required environment variable: {name}")
-       return value
+With the API running on port 3000, open these URLs in a browser:
 
+| URL | What you get |
+| --- | --- |
+| <http://localhost:3000/docs> | Swagger UI: interactive documentation where you can send requests |
+| <http://localhost:3000/redoc> | ReDoc: read-only documentation with a three-panel layout |
+| <http://localhost:3000/openapi.json> | The raw OpenAPI document that both tools render |
 
-   DATABASE_URL = required_setting("DATABASE_URL")
-   BASIC_AUTH_USERNAME = required_setting("BASIC_AUTH_USERNAME")
-   BASIC_AUTH_PASSWORD = required_setting("BASIC_AUTH_PASSWORD")
-   ```
+Swagger UI and ReDoc are only viewers. Both read `/openapi.json`, and FastAPI builds that document from your code when the app starts.
 
-   Then update `db/connection.py` to use it instead of loading `.env` itself. Remove the `os` and `dotenv` imports, the `load_dotenv()` call, and the `os.environ.get("DATABASE_URL")` check, and import the value from `config`:
+1. Open `/openapi.json` (a browser JSON viewer helps) and find these sections: `openapi`, `info`, `paths`, and `components`.
+2. Under `paths`, find `/api/projects/` and its `get` and `post` operations. Compare each entry with what Swagger UI shows for the same endpoint.
+3. Under `components` > `schemas`, find `ProjectCreate`, `ProjectRead`, and `ProjectUpdate`. Compare them with the Pydantic classes in `schemas/project.py`.
+4. Under `components` > `securitySchemes`, find `HTTPBasic`. Compare it with the `HTTPBasic()` object in `server.py`.
+5. In Swagger UI, expand an endpoint and read the parameters, request body example, and responses.
 
-   ```python
-   from config import DATABASE_URL
+## Part 3: Where the documentation comes from
 
-   engine = create_engine(DATABASE_URL)
-   ```
+FastAPI reads your Python code and fills in the OAS document. Nothing is written twice: if you change the code, the documentation changes with it.
 
-   `alembic/env.py` imports `DATABASE_URL` from `db.connection`, so it keeps working. Because `config.py` requires every setting, the Basic variables must also be present in `.env` when you run `alembic` commands.
-2. In `server.py`, add these imports:
+| What you write in code | What appears in the OpenAPI document and Swagger UI |
+| --- | --- |
+| `FastAPI(title=..., version=..., description=...)` | The `info` section at the top of the page |
+| `@app.get("/api/projects/")` | An entry under `paths` with the `get` operation |
+| Function name, for example `list_projects` | The `operationId` and, when no `summary` is given, the generated title |
+| `summary="..."` in the decorator | The short title shown next to the endpoint |
+| Function docstring | The longer, Markdown-capable description of the endpoint |
+| `tags=["Projects"]` and `openapi_tags=[...]` | Groups endpoints into sections and describes each group |
+| Path parameter, such as `project_id: int` | A required `path` parameter with its type |
+| Query parameter, such as `page: int = Query(default=1, ge=1)` | An optional `query` parameter with its type, default, and constraint |
+| `Query(description="...")` | The parameter's description text |
+| Pydantic body parameter, such as `payload: ProjectCreate` | The `requestBody` and a schema under `components` |
+| `Field(description=..., examples=[...])` on a Pydantic field | Field descriptions and the example values pre-filled in Swagger UI |
+| `Literal[...]` type, such as `ProjectStatus` | An `enum` listing the allowed values |
+| `response_model=list[ProjectRead]` | The schema of the successful (`200`) response |
+| `status_code=status.HTTP_201_CREATED` | The documented success status code |
+| `responses={401: {...}}` | Extra documented responses such as `401` and `404` |
+| `dependencies=[Depends(require_basic_auth)]` and `HTTPBasic()` | A `securitySchemes` entry, a lock icon on each endpoint, and the **Authorize** button |
+| Validation rules such as `min_length`, `ge`, and `max_length` | Constraints in the schema and an automatic `422` validation error response |
 
-   ```python
-   from secrets import compare_digest
-   from typing import Annotated
+Anything the code cannot express automatically, such as the meaning of a field or the possible error responses, is added through metadata. Part 4 does that.
 
-   from fastapi.security import HTTPBasic, HTTPBasicCredentials
+## Part 4: Improve the documentation with metadata
 
-   from config import BASIC_AUTH_PASSWORD, BASIC_AUTH_USERNAME
-   ```
+This lesson's code already contains the metadata changes below. Compare each one with the Lesson 08 version and check the effect at <http://localhost:3000/docs>.
 
-   Keep the existing FastAPI imports, including `Depends` and `HTTPException`. Then create the security scheme object below the imports:
+1. **Application information.** In `server.py`, the `FastAPI(...)` call now includes a `summary`, a Markdown `description`, a `contact`, and a new `version`. Refresh `/docs` and find them at the top of the page. Change the `version` and refresh again.
+2. **Tags.** Each route has `tags=["Projects"]`, and `openapi_tags` describes the tag. Swagger UI groups the endpoints under a **Projects** heading with that description. Try a second tag, such as `"Admin"`, on one route to see a new group appear.
+3. **Descriptions.** Each route function has a docstring. Swagger UI shows it as the endpoint's description when you expand it. The query parameters use `Query(description=...)`.
+4. **Documented responses.** The routes use a `responses={...}` argument to document `401` (and `404` where an ID is looked up). Expand an endpoint and look at its **Responses** table. Compare it with the Lesson 08 version, which listed only the success and `422` responses.
+5. **Schema field metadata.** In `schemas/project.py`, each `Field(...)` now has a `description` and `examples`. Expand **POST** `/api/projects/` and look at the request body example and the **Schemas** section at the bottom of the page.
+6. **Security scheme description.** `HTTPBasic(description=...)` adds text to the **Authorize** dialog.
 
-   ```python
-   basic_auth = HTTPBasic()
-   ```
+Metadata does not change behaviour. It only changes the generated document, so the API responds exactly as before.
 
-3. Add a dependency that validates the credentials. `compare_digest` avoids a straightforward timing leak when comparing the supplied values:
+### Turn the documentation off or move it
 
-   ```python
-   def require_basic_auth(
-       credentials: Annotated[HTTPBasicCredentials, Depends(basic_auth)],
-   ) -> str:
-       username_matches = compare_digest(
-           credentials.username, BASIC_AUTH_USERNAME
-       )
-       password_matches = compare_digest(
-           credentials.password, BASIC_AUTH_PASSWORD
-       )
-
-       if not (username_matches and password_matches):
-           raise HTTPException(
-               status_code=401,
-               detail="Invalid username or password",
-               headers={"WWW-Authenticate": "Basic"},
-           )
-
-       return credentials.username
-   ```
-
-4. Require the dependency on every project endpoint. For example, update the route decorator in `server.py`:
-
-   ```python
-   @app.get(
-       "/api/projects/",
-       response_model=list[ProjectRead],
-       summary="Get projects with optional filters and pagination",
-       dependencies=[Depends(require_basic_auth)],
-   )
-   ```
-
-   Add `dependencies=[Depends(require_basic_auth)]` to the `POST`, `PUT`, and `DELETE` project route decorators too. Applying it to every route keeps the whole project API protected.
-
-5. Start the API from this lesson's folder:
-
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   uvicorn server:app --reload --port 3000
-   ```
-
-### Test HTTP Basic in Postman
-
-Use the existing project requests, for example `GET http://localhost:3000/api/projects/`.
-
-1. Send the request with no authorization. It should return `401 Unauthorized` and include a `WWW-Authenticate: Basic` response header.
-2. In Postman's **Authorization** tab, choose **Basic Auth** and enter the local `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` values.
-3. Send the request again. A valid request should return the endpoint's normal success response.
-4. Change either value and resend. The API should return `401 Unauthorized`.
-
-Postman builds the `Authorization` header for you. HTTP Basic sends `Authorization: Basic <credentials>`, where `<credentials>` is the Base64 encoding of `username:password`. For example, `lesson-user:demo-password` is sent as `bGVzc29uLXVzZXI6ZGVtby1wYXNzd29yZA==`.
-
-To see this for yourself, copy the Base64 value from the request's **Headers** (or a `curl -v` request) into [base64decode.org](https://www.base64decode.org/) and decode it. Use only throwaway demo values on third-party sites, never real credentials.
-
-Base64 is an encoding, not encryption: anyone who sees the header can decode it. That is why HTTP Basic must run over HTTPS outside local development.
-
-### HTTP Basic security notes
-
-HTTP Basic sends the username and password with each request. Use it only over HTTPS outside local development. Environment variables keep credentials out of source control, but they are not a password database: production user passwords should be stored as salted, slow password hashes, not plaintext. Also consider rate limiting and account lockout protections for a user-facing service.
-
-## Alternatives to HTTP Basic
-
-Try one alternative at a time. Each one **replaces** the HTTP Basic dependency on the project routes; it does not add to it. The alternatives reuse `required_setting` from `config.py` and `compare_digest` and `Annotated` from Part 1, so complete Part 1 first. Add only the `.env` variable, `config.py` setting, and `server.py` code for the approach you are testing; the server fails at startup if `config.py` requires a variable that is missing from `.env`.
-
-## Alternative A: API keys
-
-An API key can be appropriate for a simple client or service integration. FastAPI can read a key from a named header with `APIKeyHeader`. Add a separate key to the local `.env` file:
-
-```dotenv
-API_KEY=replace-with-a-long-random-local-demo-key
-```
-
-Add the setting to `config.py`:
+The documentation URLs are normal FastAPI options, so you can move or disable them when an API should not publish its documentation:
 
 ```python
-API_KEY = required_setting("API_KEY")
+app = FastAPI(docs_url="/swagger", redoc_url=None, openapi_url="/api/openapi.json")
 ```
 
-Then define a dependency in `server.py`:
+Set a URL to `None` to disable it. Disabling `openapi_url` turns off the documentation endpoints that depend on it. Hiding documentation is not a security control, so keep authentication on the endpoints themselves.
 
-```python
-from fastapi.security import APIKeyHeader
+## Part 5: Try the API in Swagger UI
 
-from config import API_KEY
+Swagger UI is also a test client.
 
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+1. Open <http://localhost:3000/docs> and expand **GET** `/api/projects/`.
+2. Click **Try it out** and then **Execute** without logging in. The response should be `401 Unauthorized`.
+3. Click **Authorize** at the top of the page, enter the `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` values from your local `.env`, and close the dialog. The lock icons on the endpoints change to closed.
+4. Run the request again. It should now return `200` with a list of projects.
+5. Fill in `course`, `status`, and `page`, and execute again to see how the query parameters change the request URL. Swagger UI shows the equivalent `curl` command and the response headers.
+6. Expand **POST** `/api/projects/`, click **Try it out**, edit the example body, and execute it. Then send a body with an invalid `status` and read the `422` response.
 
-def require_api_key(
-    api_key: Annotated[str | None, Depends(api_key_header)],
-) -> None:
-    if api_key is None or not compare_digest(api_key, API_KEY):
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-```
+Swagger UI sends the Basic credentials from the browser, so it works well for local testing. Use demo credentials only, and do not leave the documentation of a real API open to the public if it exposes details you want to keep private.
 
-To protect the routes with the key, **replace** `dependencies=[Depends(require_basic_auth)]` with `dependencies=[Depends(require_api_key)]` on each project route. If both dependencies remain, every request needs both credentials. In Postman, send the key in an `X-API-Key` header.
+## Part 6: Import the specification into Postman
 
-This response has no `WWW-Authenticate` header because HTTP has no standard challenge scheme for API keys. Keep keys secret, use HTTPS, and plan how to revoke and rotate them. A single shared key does not identify individual users; issue separate keys if clients need separate access or auditing.
+Postman can turn an OpenAPI document into a collection, so you do not have to create each request by hand.
 
-## Alternative B: bearer tokens
+1. In Postman, choose **Import**.
+2. Paste `http://localhost:3000/openapi.json`. If Postman cannot reach the URL, open the URL in a browser, save the JSON to a file, and import the file instead.
+3. Choose to import the document as a collection when prompted.
+4. Open the new collection and look at the generated requests. Each endpoint in the document becomes one request, using the example bodies you added in Part 4.
+5. Set the collection's **Authorization** tab to **Basic Auth** with your local demo credentials.
+6. Send the requests and confirm they return the same results as in Swagger UI.
 
-Bearer tokens are sent in the `Authorization: Bearer <token>` header. FastAPI's `HTTPBearer` helper parses that header; the application must still validate the token. For a small demonstration, a shared token can be kept in the local `.env` file:
+If the specification changes later, import it again to refresh the collection.
 
-```dotenv
-API_BEARER_TOKEN=replace-with-a-long-random-local-demo-token
-```
+## Review questions
 
-Add the setting to `config.py`:
+1. Which tools render the OpenAPI document, and where does that document come from?
+2. Which parts of the generated documentation came from Python type hints, and which came from metadata you wrote yourself?
+3. What would you need to change to document a new `404` response on `GET /api/projects/`?
+4. Why does adding `tags`, `summary`, or `description` not change how the API behaves?
+5. Why is hiding `/docs` not a substitute for authentication?
 
-```python
-API_BEARER_TOKEN = required_setting("API_BEARER_TOKEN")
-```
+## Optional extension
 
-Then add the dependency to `server.py`:
-
-```python
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from config import API_BEARER_TOKEN
-
-bearer_scheme = HTTPBearer(auto_error=False)
-
-
-def require_bearer_token(
-    credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
-    ],
-) -> None:
-    if credentials is None or not compare_digest(
-        credentials.credentials, API_BEARER_TOKEN
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or missing bearer token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-```
-
-**Replace** `dependencies=[Depends(require_basic_auth)]` with `dependencies=[Depends(require_bearer_token)]` on each project route, then send the token as a **Bearer Token** in Postman's Authorization tab.
-
-A shared bearer token is a simple API credential, not a complete login system or a JWT. For user authentication, use short-lived, validated tokens and a secure token-issuing flow. FastAPI's `OAuth2PasswordBearer` extracts a bearer token from a request; it does not issue or validate the token by itself.
-
-## Choosing an approach
-
-- Use **HTTP Basic** to practice username-and-password authentication for this lesson.
-- Use **API keys** for straightforward client or service access where per-client credentials and key rotation are manageable.
-- Use **bearer tokens** when clients need to present issued tokens, commonly for stateless APIs. Use a well-understood OAuth2/OIDC or JWT flow for production user authentication rather than relying on one permanent shared token.
-
-For more information, see the FastAPI guides for [HTTP Basic](https://fastapi.tiangolo.com/advanced/security/http-basic-auth/) and [OAuth2 with JWT](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/), and the [security tools reference](https://fastapi.tiangolo.com/reference/security/) for `APIKeyHeader`, `HTTPBearer`, and the other helpers.
+Open <https://editor.swagger.io/>, paste in the JSON from `/openapi.json`, and compare how Swagger Editor renders it with FastAPI's own Swagger UI.

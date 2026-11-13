@@ -16,7 +16,8 @@ from db.models import Project
 # request and response validation schemas
 from schemas import ProjectCreate, ProjectRead, ProjectStatus, ProjectUpdate
 
-basic_auth = HTTPBasic()
+# the description appears in Swagger UI's Authorize dialog
+basic_auth = HTTPBasic(description="Use the demo username and password from your .env file")
 
 
 def require_basic_auth(
@@ -40,12 +41,30 @@ def require_basic_auth(
     return credentials.username
 
 
+# Reusable documentation for responses that several endpoints can return
+unauthorized_response = {
+    401: {"description": "Missing or invalid Basic credentials"}
+}
+not_found_response = {404: {"description": "Project not found"}}
+
+# Tag descriptions group the endpoints and are shown in Swagger UI and ReDoc
+tags_metadata = [
+    {"name": "Projects", "description": "Create, read, update, and delete projects."},
+]
+
 # Declare the app object
-# Swagger UI will be available at http://localhost:3000/docs and ReDoc at http://localhost:3000/redoc
+# Swagger UI is served at /docs, ReDoc at /redoc, and the raw OpenAPI document at /openapi.json
 app = FastAPI(
     title="Project Management API",
-    description="Demo API for managing projects, backed by PostgreSQL",
-    version="2.0.0",
+    summary="Demo API for managing course projects",
+    description=(
+        "Demo API for managing projects, backed by PostgreSQL.\n\n"
+        "Descriptions support **Markdown**. "
+        "All endpoints require HTTP Basic authentication."
+    ),
+    version="3.0.0",
+    contact={"name": "COMP3033 Web Frameworks and APIs"},
+    openapi_tags=tags_metadata,
 )
 
 
@@ -54,14 +73,20 @@ app = FastAPI(
     "/api/projects/",
     response_model=list[ProjectRead],
     summary="Get projects with optional filters and pagination",
+    tags=["Projects"],
+    responses=unauthorized_response,
     dependencies=[Depends(require_basic_auth)],
 )
 def list_projects(
-    course: str | None = None,
-    status: ProjectStatus | None = None,
-    page: int = Query(default=1, ge=1),
+    course: str | None = Query(default=None, description="Only return projects for this course"),
+    status: ProjectStatus | None = Query(default=None, description="Only return projects with this status"),
+    page: int = Query(default=1, ge=1, description="Page number, 10 projects per page"),
     db: Session = Depends(get_db),
 ) -> list[Project]:
+    """Return one page of projects ordered by name.
+
+    Combine `course` and `status` to filter the results.
+    """
     page_size = 10
     query = db.query(Project)
 
@@ -84,12 +109,15 @@ def list_projects(
     response_model=ProjectRead,
     status_code=status.HTTP_201_CREATED,
     summary="Create a project",
+    tags=["Projects"],
+    responses=unauthorized_response,
     dependencies=[Depends(require_basic_auth)],
 )
 def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
 ) -> Project:
+    """Create a project. `status` defaults to `TO DO` when omitted."""
     project = Project(**payload.model_dump())
     db.add(project)
     db.commit()
@@ -101,6 +129,8 @@ def create_project(
     "/api/projects/{project_id}",
     response_model=ProjectRead,
     summary="Replace a project",
+    tags=["Projects"],
+    responses={**unauthorized_response, **not_found_response},
     dependencies=[Depends(require_basic_auth)],
 )
 def update_project(
@@ -108,6 +138,7 @@ def update_project(
     payload: ProjectUpdate,
     db: Session = Depends(get_db),
 ) -> Project:
+    """Replace every editable field of an existing project."""
     project = db.get(Project, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -126,9 +157,12 @@ def update_project(
     "/api/projects/{project_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a project",
+    tags=["Projects"],
+    responses={**unauthorized_response, **not_found_response},
     dependencies=[Depends(require_basic_auth)],
 )
 def delete_project(project_id: int, db: Session = Depends(get_db)) -> Response:
+    """Delete a project by ID. A successful delete returns no body."""
     project = db.get(Project, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")

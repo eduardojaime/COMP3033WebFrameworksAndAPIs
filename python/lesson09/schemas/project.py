@@ -13,16 +13,29 @@ ProjectStatus = Literal["TO DO", "IN PROGRESS", "DONE"]
 
 
 class ProjectBase(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
-    due_date: date
-    course: str = Field(min_length=1, max_length=100)
-    status: ProjectStatus
+    # description and examples are copied into the OpenAPI schema and Swagger UI
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        description="Project name",
+        examples=["Final API project"],
+    )
+    due_date: date = Field(description="Due date (YYYY-MM-DD)", examples=["2026-12-15"])
+    course: str = Field(
+        min_length=1,
+        max_length=100,
+        description="Course the project belongs to",
+        examples=["COMP3033"],
+    )
+    status: ProjectStatus = Field(description="Current project status")
 
 
 class ProjectCreate(ProjectBase):
     """Validates the body of POST /api/projects/."""
 
-    status: ProjectStatus = "TO DO"
+    status: ProjectStatus = Field(
+        default="TO DO", description="Current project status"
+    )
 
 
 class ProjectUpdate(ProjectBase):
