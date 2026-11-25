@@ -55,6 +55,7 @@ def require_basic_auth(
 @app.get("/api/projects", 
          response_model=list[ProjectRead], 
          description="Retrieves all projects from the database.",
+         tags=["Projects"],
          dependencies=[Depends(require_basic_auth)])
 # Dependency injection to get a database session for the request
 # The db parameter is automatically provided by FastAPI using the get_db function defined in db/connection.py
@@ -90,6 +91,7 @@ def list_projects(
 @app.post("/api/projects", 
           response_model=ProjectRead, 
           description="Creates a new project in the database.",
+          tags=["Projects"],
           dependencies=[Depends(require_basic_auth)],
           status_code=status.HTTP_201_CREATED) # 201 means created successfully with no response body expected
 def create_project(payload: ProjectCreate, db: Session = Depends(get_db)) -> Project:
@@ -103,6 +105,7 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)) -> Pro
 @app.put("/api/projects/{project_id}",
          response_model=ProjectRead, 
          description="Updates an existing project in the database.",
+         tags=["Projects"],
          dependencies=[Depends(require_basic_auth)],
          status_code=status.HTTP_200_OK)
 def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depends(get_db)) -> Project:
@@ -128,6 +131,7 @@ def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depend
 # DELETE /api/projects/{project_id}
 @app.delete("/api/projects/{project_id}", 
             description="Deletes an existing project from the database.",
+            tags=["Projects"],
             dependencies=[Depends(require_basic_auth)],
             status_code=status.HTTP_204_NO_CONTENT) 
 def delete_project(project_id: int, db: Session = Depends(get_db)) -> Response:
