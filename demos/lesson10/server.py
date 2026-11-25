@@ -1,5 +1,7 @@
 # Import libraries
 # WebAPI related
+from email.policy import HTTP
+
 from fastapi import FastAPI, Depends, HTTPException, Response, status, Query
 # Database related
 from sqlalchemy.orm import Session # to manage db connections and sessions
@@ -8,14 +10,52 @@ from db.connection import get_db # to be able to pass a db connection to the rou
 from db.models import Project
 # Pydantic schemas 
 from schemas import ProjectRead, ProjectCreate, ProjectUpdate, ProjectStatus
+# Basic Auth related
+from typing import Annotated
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+# Additional library to help with comparisons
+from secrets import compare_digest
+# Credentials to compare
+from config import BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD
+
+# Initialize the Security Scheme
+basic_auth = HTTPBasic()
 
 # Declare the app object
 app = FastAPI(title="Project Tracker API", version="1.0.0", description="A simple API for managing school projects.")
 
+# Authentication Middleware
+def require_basic_auth(
+        credentials: Annotated[HTTPBasicCredentials, Depends(basic_auth)]
+) -> str:
+    # this function extracts the credentials from the request header (using Annotated)
+    # then compares them against the configured values in .env
+    # this logic simulates checking from a DB
+    username_matches = compare_digest(
+        credentials.username,
+        BASIC_AUTH_USERNAME
+    )
+    password_matches = compare_digest(
+        credentials.password,
+        BASIC_AUTH_PASSWORD
+    )
+    # If either the username or password doesn't match, raise a 401 Unauthorized error
+    if not (username_matches and password_matches):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"}, # this is required to prompt the user for credentials in the browser
+        )
+    # otherwise return the username and let the request pass through normally (no more processing here)
+    return credentials.username
+
 # Define route handlers (endpoints) for the API
 # GET endpoint to retrieve all projects from the database
 # GET /api/projects
-@app.get("/api/projects", response_model=list[ProjectRead], description="Retrieves all projects from the database.")
+@app.get("/api/projects", 
+         response_model=list[ProjectRead], 
+         description="Retrieves all projects from the database.",
+         dependencies=[Depends(require_basic_auth)])
 # Dependency injection to get a database session for the request
 # The db parameter is automatically provided by FastAPI using the get_db function defined in db/connection.py
 # Pagination works by providing pageNumber and limit as query parameters
@@ -50,6 +90,7 @@ def list_projects(
 @app.post("/api/projects", 
           response_model=ProjectRead, 
           description="Creates a new project in the database.",
+          dependencies=[Depends(require_basic_auth)],
           status_code=status.HTTP_201_CREATED) # 201 means created successfully with no response body expected
 def create_project(payload: ProjectCreate, db: Session = Depends(get_db)) -> Project:
     new_project = Project(**payload.model_dump()) # unpack the payload into the Project model
@@ -61,8 +102,9 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)) -> Pro
 # PUT /api/projects/{project_id} > request body contains the updated data in JSON
 @app.put("/api/projects/{project_id}",
          response_model=ProjectRead, 
-          description="Updates an existing project in the database.",
-          status_code=status.HTTP_200_OK)
+         description="Updates an existing project in the database.",
+         dependencies=[Depends(require_basic_auth)],
+         status_code=status.HTTP_200_OK)
 def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depends(get_db)) -> Project:
     # Find the project by id, if not found, raise a 404 error
     project = db.get(Project, project_id)
@@ -86,6 +128,7 @@ def update_project(project_id: int, payload: ProjectUpdate, db: Session = Depend
 # DELETE /api/projects/{project_id}
 @app.delete("/api/projects/{project_id}", 
             description="Deletes an existing project from the database.",
+            dependencies=[Depends(require_basic_auth)],
             status_code=status.HTTP_204_NO_CONTENT) 
 def delete_project(project_id: int, db: Session = Depends(get_db)) -> Response:
     # Find the project by id, if not found, raise a 404 error
