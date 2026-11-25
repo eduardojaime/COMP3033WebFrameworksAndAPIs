@@ -11,7 +11,7 @@ from db.models import Project
 # Pydantic schemas 
 from schemas import ProjectRead, ProjectCreate, ProjectUpdate, ProjectStatus
 # Basic Auth related
-from typing import Annotated
+from typing import Annotated, Literal
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 # Additional library to help with comparisons
 from secrets import compare_digest
@@ -49,24 +49,13 @@ def require_basic_auth(
     # otherwise return the username and let the request pass through normally (no more processing here)
     return credentials.username
 
-# Define route handlers (endpoints) for the API
-# GET endpoint to retrieve all projects from the database
-# GET /api/projects
-@app.get("/api/projects", 
-         response_model=list[ProjectRead], 
-         description="Retrieves all projects from the database.",
-         tags=["Projects"],
-         dependencies=[Depends(require_basic_auth)])
-# Dependency injection to get a database session for the request
-# The db parameter is automatically provided by FastAPI using the get_db function defined in db/connection.py
-# Pagination works by providing pageNumber and limit as query parameters
-# e.g.  /api/projects?pageNumber=1&limit=10 will return the first 10 projects
-#       /api/projects?pageNumber=2&limit=10 will return the next 10 projects, and so on
-def list_projects(
+# Different versions of get_projects method
+# Simulates two different modules that have different logic implemented
+def get_projects_v1(
     pageNumber: int = Query(default=1, ge=1), # limit or page size will be set programmatically
     status: ProjectStatus | None = None, # optional filter by status, if not provided, all projects will be returned
     db: Session = Depends(get_db)
-    ):
+    ) -> list[Project]:
     # Pagination logic > calculate offset based on page number and hardcoded limit
     limit = 100
     offset = (pageNumber - 1) * limit # e.g. page 1 = offset 0, page 2 = offset 10, page 3 = offset 20, etc.
@@ -86,6 +75,42 @@ def list_projects(
         .limit(limit)
         .all()
     )
+
+def get_projects_v2() -> list[Project]:
+    # This is a placeholder for a different implementation of the get_projects method
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="This version of the get_projects method is not implemented yet."
+    )
+
+# Define route handlers (endpoints) for the API
+# GET endpoint to retrieve all projects from the database
+# GET /api/projects
+@app.get("/api/projects", 
+         response_model=list[ProjectRead], 
+         description="Retrieves all projects from the database.",
+         tags=["Projects"],
+         dependencies=[Depends(require_basic_auth)])
+# Dependency injection to get a database session for the request
+# The db parameter is automatically provided by FastAPI using the get_db function defined in db/connection.py
+# Pagination works by providing pageNumber and limit as query parameters
+# e.g.  /api/projects?pageNumber=1&limit=10 will return the first 10 projects
+#       /api/projects?pageNumber=2&limit=10 will return the next 10 projects, and so on
+def list_projects(
+    pageNumber: int = Query(default=1, ge=1), # limit or page size will be set programmatically
+    status: ProjectStatus | None = None, # optional filter by status, if not provided, all projects will be returned
+    v: Literal["1", "2"] = Query(default="1", description="Version of the API to use. Default is 1."),
+    db: Session = Depends(get_db)):
+    # Use the appropriate version of the get_projects method based on the v query parameter
+    if v == "1":
+        return get_projects_v1(pageNumber=pageNumber, status=status, db=db)
+    elif v == "2":
+        return get_projects_v2()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid version '{v}' specified. Supported versions are '1' and '2'."
+        )
 
 # POST /api/projects
 @app.post("/api/projects", 
