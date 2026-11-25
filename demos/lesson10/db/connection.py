@@ -2,17 +2,19 @@
 # Import libraries
 import os
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
+from config import DATABASE_URL
+
 
 # Configure the database engine using the connection string from the environment variable
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL environment variable is not set.")
+# DATABASE_URL = DATABASE_URL
+# if not DATABASE_URL:
+#     raise RuntimeError("DATABASE_URL environment variable is not set.")
 
 # Engine manages the connection pool
 engine = create_engine(DATABASE_URL)
