@@ -35,3 +35,4 @@ A parallel Python/FastAPI track mirrors the early Node.js lessons.
 | 08 | Securing FastAPI endpoints with HTTP Basic, API keys, and bearer tokens | [Lesson 08](python/lesson08/README.md) |
 | 09 | OpenAPI documentation: exploring FastAPI's generated Swagger UI, ReDoc, and `/openapi.json`, plus documentation metadata | [Lesson 09](python/lesson09/README.md) |
 | 10 | API versioning with query parameters and path-based `APIRouter` modules | [Lesson 10](python/lesson10/README.md) |
+| 11 | Enabling CORS in FastAPI and consuming the API from an HTML/jQuery page and a Streamlit app | [Lesson 11](python/lesson11/README.md) |

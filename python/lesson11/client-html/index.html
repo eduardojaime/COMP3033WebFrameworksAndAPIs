@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Projects</title>
+        <!-- jQuery from the official CDN: https://code.jquery.com/ -->
+        <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+
+        <script>
+            // make this configurable for your environment
+            var url = 'http://localhost:3000/api/v2/projects/?status=DONE';
+
+            $(document).ready(function () {
+                $('#loadForm').on('submit', function (event) {
+                    // keep the browser from reloading the page
+                    event.preventDefault();
+
+                    // Basic authentication is "username:password" encoded as Base64
+                    var token = btoa($('#username').val() + ':' + $('#password').val());
+
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        headers: { Authorization: 'Basic ' + token },
+                    })
+                        .done(function (data, status, xhr) {
+                            // the browser can read this header only because the server exposes it
+                            $('#apiVersion').text(xhr.getResponseHeader('version'));
+                            $('#message').text('');
+
+                            var tableBody = $('#projectListing');
+                            tableBody.empty();
+
+                            data.forEach(function (elem) {
+                                // .text() escapes the values so data cannot inject HTML
+                                var row = $('<tr></tr>')
+                                    .append($('<td></td>').text(elem.name))
+                                    .append($('<td></td>').text(elem.status))
+                                    .append($('<td></td>').text(new Date(elem.due_date + 'T00:00:00').toDateString()));
+                                tableBody.append(row);
+                            });
+                        })
+                        .fail(function (xhr) {
+                            // status 0 means the browser blocked or could not complete the request
+                            $('#message').text(
+                                xhr.status === 0
+                                    ? 'Request failed. Open the browser console (F12) to see if CORS blocked it.'
+                                    : 'Request failed with status ' + xhr.status
+                            );
+                        });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Projects</h1>
+
+        <form id="loadForm">
+            <input id="username" placeholder="Username" autocomplete="username" required>
+            <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
+            <button type="submit">Load projects</button>
+        </form>
+
+        <p>API version header: <strong id="apiVersion"></strong></p>
+        <p id="message"></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                </tr>
+            </thead>
+            <tbody id="projectListing"></tbody>
+        </table>
+    </body>
+</html>

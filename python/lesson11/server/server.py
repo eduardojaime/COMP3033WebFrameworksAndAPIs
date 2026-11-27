@@ -1,5 +1,9 @@
 # for creating the WebAPI application
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# browser origins allowed to call the API
+from config import CORS_ORIGINS
 
 # one router per API version
 from routers.v1 import projects as projects_v1
@@ -24,6 +28,16 @@ app = FastAPI(
     version="4.0.0",
     contact={"name": "COMP3033 Web Frameworks and APIs"},
     openapi_tags=tags_metadata,
+)
+
+# Allow browsers on these origins to call the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_methods=["GET"],
+    allow_headers=["Authorization"],
+    # lets browser code read the custom version header added in Lesson 10
+    expose_headers=["version"],
 )
 
 # The original URL keeps working and serves v1; it is hidden from the docs because /api/v1/projects documents the same routes
