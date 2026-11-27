@@ -1,55 +1,14 @@
-from secrets import compare_digest
-from typing import Annotated
+# for creating the WebAPI application
+from fastapi import FastAPI
 
-# for creating the WebAPI application and handling CRUD responses
-from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
-# for HTTP Basic authentication
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-# for a typed database session parameter
-from sqlalchemy.orm import Session
-
-# authentication settings loaded from the local .env file
-from config import BASIC_AUTH_PASSWORD, BASIC_AUTH_USERNAME
-# db module: connection.py (engine/session) and models.py (mapped classes)
-from db.connection import get_db
-from db.models import Project
-# request and response validation schemas
-from schemas import ProjectCreate, ProjectRead, ProjectStatus, ProjectUpdate
-
-# the description appears in Swagger UI's Authorize dialog
-basic_auth = HTTPBasic(description="Use the demo username and password from your .env file")
-
-
-def require_basic_auth(
-    credentials: Annotated[HTTPBasicCredentials, Depends(basic_auth)],
-) -> str:
-    # compare_digest avoids leaking information through comparison timing
-    username_matches = compare_digest(
-        credentials.username, BASIC_AUTH_USERNAME
-    )
-    password_matches = compare_digest(
-        credentials.password, BASIC_AUTH_PASSWORD
-    )
-
-    if not (username_matches and password_matches):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-
-    return credentials.username
-
-
-# Reusable documentation for responses that several endpoints can return
-unauthorized_response = {
-    401: {"description": "Missing or invalid Basic credentials"}
-}
-not_found_response = {404: {"description": "Project not found"}}
+# one router per API version
+from routers.v1 import projects as projects_v1
+from routers.v2 import projects as projects_v2
 
 # Tag descriptions group the endpoints and are shown in Swagger UI and ReDoc
 tags_metadata = [
-    {"name": "Projects", "description": "Create, read, update, and delete projects."},
+    {"name": "Projects v1", "description": "Version 1 of the project endpoints."},
+    {"name": "Projects v2", "description": "Version 2 of the project endpoints."},
 ]
 
 # Declare the app object
@@ -62,111 +21,12 @@ app = FastAPI(
         "Descriptions support **Markdown**. "
         "All endpoints require HTTP Basic authentication."
     ),
-    version="3.0.0",
+    version="4.0.0",
     contact={"name": "COMP3033 Web Frameworks and APIs"},
     openapi_tags=tags_metadata,
 )
 
-
-# CONTROLLER
-@app.get(
-    "/api/projects/",
-    response_model=list[ProjectRead],
-    summary="Get projects with optional filters and pagination",
-    tags=["Projects"],
-    responses=unauthorized_response,
-    dependencies=[Depends(require_basic_auth)],
-)
-def list_projects(
-    course: str | None = Query(default=None, description="Only return projects for this course"),
-    status: ProjectStatus | None = Query(default=None, description="Only return projects with this status"),
-    page: int = Query(default=1, ge=1, description="Page number, 10 projects per page"),
-    db: Session = Depends(get_db),
-) -> list[Project]:
-    """Return one page of projects ordered by name.
-
-    Combine `course` and `status` to filter the results.
-    """
-    page_size = 10
-    query = db.query(Project)
-
-    if course is not None:
-        query = query.filter(Project.course == course)
-    if status is not None:
-        query = query.filter(Project.status == status)
-
-    # ID is a tie-breaker so pages are stable when names match
-    return (
-        query.order_by(Project.name.asc(), Project.id.asc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
-    )
-
-
-@app.post(
-    "/api/projects/",
-    response_model=ProjectRead,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create a project",
-    tags=["Projects"],
-    responses=unauthorized_response,
-    dependencies=[Depends(require_basic_auth)],
-)
-def create_project(
-    payload: ProjectCreate,
-    db: Session = Depends(get_db),
-) -> Project:
-    """Create a project. `status` defaults to `TO DO` when omitted."""
-    project = Project(**payload.model_dump())
-    db.add(project)
-    db.commit()
-    db.refresh(project)
-    return project
-
-
-@app.put(
-    "/api/projects/{project_id}",
-    response_model=ProjectRead,
-    summary="Replace a project",
-    tags=["Projects"],
-    responses={**unauthorized_response, **not_found_response},
-    dependencies=[Depends(require_basic_auth)],
-)
-def update_project(
-    project_id: int,
-    payload: ProjectUpdate,
-    db: Session = Depends(get_db),
-) -> Project:
-    """Replace every editable field of an existing project."""
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    project.name = payload.name
-    project.due_date = payload.due_date
-    project.course = payload.course
-    project.status = payload.status
-
-    db.commit()
-    db.refresh(project)
-    return project
-
-
-@app.delete(
-    "/api/projects/{project_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a project",
-    tags=["Projects"],
-    responses={**unauthorized_response, **not_found_response},
-    dependencies=[Depends(require_basic_auth)],
-)
-def delete_project(project_id: int, db: Session = Depends(get_db)) -> Response:
-    """Delete a project by ID. A successful delete returns no body."""
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    db.delete(project)
-    db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+# The original URL keeps working and serves v1; it is hidden from the docs because /api/v1/projects documents the same routes
+app.include_router(projects_v1.router, prefix="/api/projects", include_in_schema=False)
+app.include_router(projects_v1.router, prefix="/api/v1/projects")
+app.include_router(projects_v2.router, prefix="/api/v2/projects")
